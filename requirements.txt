@@ -1,0 +1,9 @@
+NiaPy==1.0.2
+inspyred==1.0.1
+ipykernel
+regex
+tqdm
+pandas
+numpy
+matplotlib
+dataclasses_json
