@@ -1,4 +1,4 @@
-NiaPy==1.0.2
+NiaPy==2.0.0rc11
 inspyred==1.0.1
 ipykernel
 regex
