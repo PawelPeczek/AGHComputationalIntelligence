@@ -14,7 +14,7 @@ from jmetal.util.termination_criterion import TerminationCriterion
 
 class ClonalProblem(FloatProblem):
     @abstractmethod
-    def affinity(self, solution: FloatSolution):
+    def affinity(self, solution: FloatSolution) -> float:
         pass
 
 
@@ -35,9 +35,6 @@ class ClonalSelection(Algorithm[FloatSolution, List[FloatSolution]]):
         self.start_computing_time = 0
         self.total_computing_time = 0
 
-        self.termination_criterion = termination_criterion
-        self.observable.register(termination_criterion)
-
         self.evaluator = evaluator
         self.mutator = mutation
 
@@ -48,6 +45,9 @@ class ClonalSelection(Algorithm[FloatSolution, List[FloatSolution]]):
         self.random_cells_number = random_cells_number
 
         self.observable = store.default_observable
+
+        self.termination_criterion = termination_criterion
+        self.observable.register(termination_criterion)
 
     def create_initial_solutions(self) -> List[FloatSolution]:
         """ Creates the initial list of solutions of a metaheuristic. """
@@ -73,11 +73,11 @@ class ClonalSelection(Algorithm[FloatSolution, List[FloatSolution]]):
         clones = []
         for p in population_selected:
             clones += self.clone(p)
-        temp_clonses = []
+        temp_clones = []
         for clone in clones:
             mutated_clone = self.mutator.execute(clone[1])
-            temp_clonses.append((self.problem.affinity(mutated_clone), mutated_clone))
-        clones = temp_clonses
+            temp_clones.append((self.problem.affinity(mutated_clone), mutated_clone))
+        clones = temp_clones
         temp_population = affinity_values + clones
         population = sorted(temp_population, key=lambda x: x[0], reverse=True)[:self.population_size]
         population_randoms = [self.problem.create_solution() for x in range(self.random_cells_number)]
@@ -105,8 +105,10 @@ class ClonalSelection(Algorithm[FloatSolution, List[FloatSolution]]):
                 'SOLUTIONS': self.get_result(),
                 'COMPUTING_TIME': time.time() - self.start_computing_time}
 
-    def get_result(self) -> List[FloatSolution]:
-        return self.solutions
+    def get_result(self) -> FloatSolution:
+        affinity_values = [(self.problem.affinity(solution), solution) for solution in self.solutions]
+        result = sorted(affinity_values, key=lambda x: x[0], reverse=True)[0]
+        return result[1]
 
     def get_name(self) -> str:
         return "CLONALG"
