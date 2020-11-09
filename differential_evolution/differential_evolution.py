@@ -1,14 +1,15 @@
-import numpy as np
-import matplotlib.pyplot as plt
 from jmetal.core.algorithm import EvolutionaryAlgorithm
 from jmetal.core.problem import FloatProblem
 from jmetal.core.solution import FloatSolution
-from jmetal.util.evaluator import Evaluator
 from abc import abstractmethod
 from typing import List
 import random
 import functools
 import math
+
+from framework.helpers.metrics import euclidean_distance, solution_comparator
+from framework.helpers.termination_criterion import EnrichedStoppingByEvaluations
+from framework.helpers.solutions import initialize_solutions, evaluate_solutions
 
 
 class DEProblem(FloatProblem):
@@ -29,7 +30,6 @@ class DifferentialEvolution(EvolutionaryAlgorithm[FloatSolution, FloatSolution])
         super(EvolutionaryAlgorithm, self).__init__()
         self.population_size = population_size
         self.problem = problem
-        self.max_iter = max_iter
         self.dims = problem.number_of_variables
         
         self.cr = cr
@@ -43,8 +43,9 @@ class DifferentialEvolution(EvolutionaryAlgorithm[FloatSolution, FloatSolution])
         ## AUGMENTED REPRODUCTION
         self.is_augmented_reproduction = number_of_partners != 3
         self.number_of_partners = number_of_partners
+        self.__stop_criterion = EnrichedStoppingByEvaluations(max_iter)
+        self.observable.register(self.__stop_criterion)
 
-            
     def selection(self, population: List[FloatSolution]) -> List[FloatSolution]:
         return population
 
@@ -56,8 +57,8 @@ class DifferentialEvolution(EvolutionaryAlgorithm[FloatSolution, FloatSolution])
             neighbourhood = population
             
             if self.is_simulated_annealing:
-                current_radius = self.initial_search_radius * (1 - self.iter / self.max_iter)
-                neighbourhood = list(filter(lambda neighbour: 0 < self.calculate_euclidean_distance(neighbour, speciman) <= current_radius, population))
+                current_radius = self.initial_search_radius * (1 - self.__stop_criterion.progress)
+                neighbourhood = list(filter(lambda neighbour: 0 < euclidean_distance(neighbour, speciman) <= current_radius, population))
 
             if len(neighbourhood) < self.number_of_partners:
                 offspring_population.append(speciman)
@@ -92,28 +93,22 @@ class DifferentialEvolution(EvolutionaryAlgorithm[FloatSolution, FloatSolution])
     
     def replacement(self, population: List[FloatSolution], offspring_population: List[FloatSolution]) -> List[FloatSolution]:
         whole_population = population + offspring_population
-
-        def compare(sol1, sol2) -> int:
-            val1 = self.problem.evaluate(sol1).objectives[0]
-            val2 = self.problem.evaluate(sol2).objectives[0]
-            if val1 > val2:
-                return 1
-            elif val2 > val1:
-                return -1
-            else:
-                return 0
-        
-        sorted_whole_population = sorted(whole_population, key=functools.cmp_to_key(compare))
-        
+        sorted_whole_population = sorted(whole_population, key=functools.cmp_to_key(solution_comparator))
         return sorted_whole_population[:len(sorted_whole_population) // 2]
     
     def create_initial_solutions(self) -> List[FloatSolution]:
         """ Creates the initial list of solutions of a metaheuristic. """
-        return [self.problem.create_solution() for x in range(self.population_size)]
+        return initialize_solutions(
+            problem=self.problem,
+            population_size=self.population_size
+        )
 
     def evaluate(self, solution_list: List[FloatSolution]) -> List[FloatSolution]:
         """ Evaluates a solution list. """
-        return [self.problem.evaluate(sol) for sol in solution_list]
+        return evaluate_solutions(
+            problem=self.problem,
+            solution_list=solution_list
+        )
 
     def init_progress(self) -> None:
         """ Initialize the algorithm. """
@@ -122,18 +117,17 @@ class DifferentialEvolution(EvolutionaryAlgorithm[FloatSolution, FloatSolution])
         observable_data = self.get_observable_data()
         self.observable.notify_all(**observable_data)
         ###
-        self.iter = 0
+        self.__stop_criterion.reset()
 
     def stopping_condition_is_met(self) -> bool:
         """ The stopping condition is met or not. """
-        return self.iter >= self.max_iter
+        return self.__stop_criterion.is_met
 
     def update_progress(self) -> None:
         """ Update the progress after each iteration. """
         self.evaluations += self.offspring_population_size
         observable_data = self.get_observable_data()
         self.observable.notify_all(**observable_data)
-        self.iter += 1
 
     def get_result(self) -> FloatSolution:
         # TODO
@@ -149,12 +143,3 @@ class DifferentialEvolution(EvolutionaryAlgorithm[FloatSolution, FloatSolution])
             sum_of_squares += (self.problem.upper_bound[i] - self.problem.lower_bound[i]) ** 2
 
         return math.sqrt(sum_of_squares)
-
-    def calculate_euclidean_distance(self, x, y) -> float:
-        sum_of_squares = 0
-
-        for i in range(x.number_of_variables):
-            sum_of_squares += (x.variables[i] - y.variables[i]) ** 2
-
-        return math.sqrt(sum_of_squares)
-        
