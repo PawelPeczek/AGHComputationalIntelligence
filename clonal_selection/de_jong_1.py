@@ -59,6 +59,6 @@ if __name__ == '__main__':
 
     print('Algorithm: ' + algorithm.get_name())
     print('Problem: ' + problem.get_name())
-    print('Solution: ' + str(result.variables[0]) + str(result.variables[0]))
+    print('Solution: ' + str(result.variables[0]) + " " + str(result.variables[1]))
     print('Fitness:  ' + str(result.objectives[0]))
     print('Computing time: ' + str(algorithm.total_computing_time))
