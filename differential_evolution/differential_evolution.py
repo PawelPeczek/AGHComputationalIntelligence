@@ -24,7 +24,8 @@ class DifferentialEvolution(EvolutionaryAlgorithm[FloatSolution, FloatSolution])
                  max_iter: int,
                  cr: float,
                  f: float,
-                 is_simulated_annealing: bool = False):
+                 is_simulated_annealing: bool = False,
+                 number_of_partners: int = 3):
         super(EvolutionaryAlgorithm, self).__init__()
         self.population_size = population_size
         self.problem = problem
@@ -38,6 +39,10 @@ class DifferentialEvolution(EvolutionaryAlgorithm[FloatSolution, FloatSolution])
         ## SIMULATED ANNEALING
         self.is_simulated_annealing = is_simulated_annealing
         self.initial_search_radius = self.calculate_init_search_radius()
+
+        ## AUGMENTED REPRODUCTION
+        self.is_augmented_reproduction = number_of_partners != 3
+        self.number_of_partners = number_of_partners
 
             
     def selection(self, population: List[FloatSolution]) -> List[FloatSolution]:
@@ -54,20 +59,32 @@ class DifferentialEvolution(EvolutionaryAlgorithm[FloatSolution, FloatSolution])
                 current_radius = self.initial_search_radius * (1 - self.iter / self.max_iter)
                 neighbourhood = list(filter(lambda neighbour: 0 < self.calculate_euclidean_distance(neighbour, speciman) <= current_radius, population))
 
-            if len(neighbourhood) < 3:
+            if len(neighbourhood) < self.number_of_partners:
                 offspring_population.append(speciman)
                 continue
+                        
+            partners = random.sample(neighbourhood, self.number_of_partners)
+            weights = []
 
-            a, b, c = random.sample(neighbourhood, 3)
+            if self.is_augmented_reproduction:
+                weights = [math.pow(2, -x) for x in range(1, self.number_of_partners + 1)]
+                random.shuffle(weights)
+
             dim = random.randint(0, speciman.number_of_variables - 1)
             
             random_weights = [random.random() for _ in range(self.dims)]
             offspring = self.problem.create_solution()
             offspring.variables = speciman.variables.copy()
             
-            for i in range(self.dims):
-                if random_weights[i] < self.cr or i == dim:
-                    offspring.variables[i] = a.variables[i] + self.f * (b.variables[i] - c.variables[i])
+            for index_dim in range(self.dims):
+                if random_weights[index_dim] < self.cr or index_dim == dim:
+                    if self.is_augmented_reproduction:
+                        value = 0
+                        for i, partner in enumerate(partners[1:]):
+                            value += weights[i] * partner.variables[index_dim] * (math.pow(-1, random.random() > 0.5))
+                        offspring.variables[index_dim] = partners[0].variables[index_dim] + self.f * value
+                    else:
+                        offspring.variables[index_dim] = partners[0].variables[index_dim] + self.f * (partners[1].variables[index_dim] - partners[2].variables[index_dim])
             
             offspring_population.append(offspring)
             
@@ -140,3 +157,4 @@ class DifferentialEvolution(EvolutionaryAlgorithm[FloatSolution, FloatSolution])
             sum_of_squares += (x.variables[i] - y.variables[i]) ** 2
 
         return math.sqrt(sum_of_squares)
+        
