@@ -1,7 +1,7 @@
 import threading
 import time
-from abc import abstractmethod
 from typing import List
+import numpy as np
 
 from jmetal.config import store
 from jmetal.core.algorithm import Algorithm
@@ -12,15 +12,9 @@ from jmetal.util.evaluator import Evaluator
 from jmetal.util.termination_criterion import TerminationCriterion
 
 
-class ClonalProblem(FloatProblem):
-    @abstractmethod
-    def affinity(self, solution: FloatSolution) -> float:
-        pass
-
-
 class ClonalSelection(Algorithm[FloatSolution, List[FloatSolution]]):
     def __init__(self,
-                 problem: ClonalProblem,
+                 problem: FloatProblem,
                  population_size: int,
                  termination_criterion: TerminationCriterion,
                  selection_size: int,
@@ -56,7 +50,6 @@ class ClonalSelection(Algorithm[FloatSolution, List[FloatSolution]]):
     def evaluate(self, solution_list: List[FloatSolution]) -> List[FloatSolution]:
         """ Evaluates a solution list. """
         return self.evaluator.evaluate(solution_list, self.problem)
-    # TODO affinity?
 
     def init_progress(self) -> None:
         """ Initialize the algorithm. """
@@ -68,7 +61,7 @@ class ClonalSelection(Algorithm[FloatSolution, List[FloatSolution]]):
 
     def step(self) -> None:
         """ Performs one iteration/step of the algorithm's loop. """
-        affinity_values = [(self.problem.affinity(solution), solution) for solution in self.solutions]
+        affinity_values = [(self.affinity(solution), solution) for solution in self.solutions]
         population_selected = sorted(affinity_values, key=lambda x: x[0], reverse=True)[:self.selection_size]
         clones = []
         for p in population_selected:
@@ -76,15 +69,20 @@ class ClonalSelection(Algorithm[FloatSolution, List[FloatSolution]]):
         temp_clones = []
         for clone in clones:
             mutated_clone = self.mutator.execute(clone[1])
-            temp_clones.append((self.problem.affinity(mutated_clone), mutated_clone))
+            temp_clones.append((self.affinity(mutated_clone), mutated_clone))
         clones = temp_clones
         temp_population = affinity_values + clones
         population = sorted(temp_population, key=lambda x: x[0], reverse=True)[:self.population_size]
         population_randoms = [self.problem.create_solution() for x in range(self.random_cells_number)]
-        randoms_affinity_values = [(self.problem.affinity(solution), solution) for solution in population_randoms]
+        randoms_affinity_values = [(self.affinity(solution), solution) for solution in population_randoms]
         population += randoms_affinity_values
         population = sorted(population, key=lambda x: x[0], reverse=True)[:self.population_size]
         self.solutions = [p[1] for p in population]
+
+    def affinity(self, solution: FloatSolution) -> float:
+        direction = [-1 if d == self.problem.MINIMIZE else 1 for d in self.problem.obj_directions]
+        # TODO ask about how affinity should be implemented.
+        return np.multiply(direction, self.problem.evaluate(solution).objectives)
 
     def clone(self, solution):
         clone_num = int(self.clone_rate / solution[0])
@@ -106,7 +104,7 @@ class ClonalSelection(Algorithm[FloatSolution, List[FloatSolution]]):
                 'COMPUTING_TIME': time.time() - self.start_computing_time}
 
     def get_result(self) -> FloatSolution:
-        affinity_values = [(self.problem.affinity(solution), solution) for solution in self.solutions]
+        affinity_values = [(self.affinity(solution), solution) for solution in self.solutions]
         result = sorted(affinity_values, key=lambda x: x[0], reverse=True)[0]
         return result[1]
 
