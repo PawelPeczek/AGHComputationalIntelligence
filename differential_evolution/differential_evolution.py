@@ -1,3 +1,5 @@
+import numpy as np
+import matplotlib.pyplot as plt
 from jmetal.core.algorithm import EvolutionaryAlgorithm
 from jmetal.core.problem import FloatProblem
 from jmetal.core.solution import FloatSolution
@@ -6,6 +8,7 @@ from abc import abstractmethod
 from typing import List
 import random
 import functools
+import math
 
 
 class DEProblem(FloatProblem):
@@ -18,18 +21,23 @@ class DifferentialEvolution(EvolutionaryAlgorithm[FloatSolution, FloatSolution])
     def __init__(self,
                  problem: DEProblem,
                  population_size: int,
-                 maxiter: int,
+                 max_iter: int,
                  cr: float,
-                 f: float):
+                 f: float,
+                 is_simulated_annealing: bool = False):
         super(EvolutionaryAlgorithm, self).__init__()
         self.population_size = population_size
         self.problem = problem
-        self.maxiter = maxiter
+        self.max_iter = max_iter
         self.dims = problem.number_of_variables
         
         self.cr = cr
         self.f = f
         self.offspring_population_size = population_size
+
+        ## SIMULATED ANNEALING
+        self.is_simulated_annealing = is_simulated_annealing
+        self.initial_search_radius = self.calculate_init_search_radius()
 
             
     def selection(self, population: List[FloatSolution]) -> List[FloatSolution]:
@@ -40,7 +48,17 @@ class DifferentialEvolution(EvolutionaryAlgorithm[FloatSolution, FloatSolution])
         offspring_population = []
         
         for speciman in population:
-            a, b, c = random.sample(population, 3)
+            neighbourhood = population
+            
+            if self.is_simulated_annealing:
+                current_radius = self.initial_search_radius * (1 - self.iter / self.max_iter)
+                neighbourhood = list(filter(lambda neighbour: 0 < self.calculate_euclidean_distance(neighbour, speciman) <= current_radius, population))
+
+            if len(neighbourhood) < 3:
+                offspring_population.append(speciman)
+                continue
+
+            a, b, c = random.sample(neighbourhood, 3)
             dim = random.randint(0, speciman.number_of_variables - 1)
             
             random_weights = [random.random() for _ in range(self.dims)]
@@ -91,7 +109,7 @@ class DifferentialEvolution(EvolutionaryAlgorithm[FloatSolution, FloatSolution])
 
     def stopping_condition_is_met(self) -> bool:
         """ The stopping condition is met or not. """
-        return self.iter >= self.maxiter
+        return self.iter >= self.max_iter
 
     def update_progress(self) -> None:
         """ Update the progress after each iteration. """
@@ -106,6 +124,19 @@ class DifferentialEvolution(EvolutionaryAlgorithm[FloatSolution, FloatSolution])
 
     def get_name(self) -> str:
         return "DE"
-    
 
-        
+    def calculate_init_search_radius(self) -> float:
+        sum_of_squares = 0
+
+        for i in range(self.problem.number_of_variables):
+            sum_of_squares += (self.problem.upper_bound[i] - self.problem.lower_bound[i]) ** 2
+
+        return math.sqrt(sum_of_squares)
+
+    def calculate_euclidean_distance(self, x, y) -> float:
+        sum_of_squares = 0
+
+        for i in range(x.number_of_variables):
+            sum_of_squares += (x.variables[i] - y.variables[i]) ** 2
+
+        return math.sqrt(sum_of_squares)
