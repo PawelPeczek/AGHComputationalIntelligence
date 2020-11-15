@@ -273,3 +273,7 @@ dmypy.json
 
 # Gstreamer logs
 *gstshark*
+
+
+results/*
+!results/.gitkeep
