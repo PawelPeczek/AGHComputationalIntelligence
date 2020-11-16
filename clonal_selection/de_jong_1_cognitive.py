@@ -1,7 +1,6 @@
 from jmetal.operator import PolynomialMutation
 from jmetal.util.termination_criterion import StoppingByEvaluations
 
-
 from clonal_selection.clonal_selection import ClonalSelection
 from clonal_selection.clonal_selection_cognitive import ClonalSelectionCognitive
 from clonal_selection.de_jong_1 import DeJong1
@@ -30,6 +29,7 @@ if __name__ == '__main__':
     algorithm = ClonalSelectionCognitive(
         clonal_selections=clonal_selections,
         mix_rate=0.4,
+        mixes_number=2,
         termination_criterion=StoppingByEvaluations(max_evaluations=max_evaluations)
     )
 

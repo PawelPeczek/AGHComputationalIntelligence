@@ -62,17 +62,47 @@ def run() -> None:
                     problem=problem,
                     population_size=100,
                     selection_size=30,
-                    mutation=PolynomialMutation(probability=1.0 / (problem.number_of_variables * 2), distribution_index=20),
+                    mutation=PolynomialMutation(probability=1.0 / (problem.number_of_variables * 2),
+                                                distribution_index=20),
                     termination_criterion=StoppingByEvaluations(max_evaluations=2000)
                 )
             ],
             "mix_rate": 0.4,
+            "mixes_number": 2,
+            "termination_criterion": StoppingByEvaluations(max_evaluations=2000)
+        }
+    )
+    problem = DeJong1(-5.12, 5.12)
+    fourth_execution_unit = ExecutionUnit(
+        algorithm_cls=ClonalSelectionCognitive,
+        problem_name="DeJong1"
+    ).register_run(
+        parameters={
+            "clonal_selections": [
+                ClonalSelection(
+                    problem=problem,
+                    population_size=100,
+                    selection_size=30,
+                    mutation=PolynomialMutation(probability=1.0 / problem.number_of_variables, distribution_index=20),
+                    termination_criterion=StoppingByEvaluations(max_evaluations=2000)
+                ),
+                ClonalSelection(
+                    problem=problem,
+                    population_size=100,
+                    selection_size=30,
+                    mutation=PolynomialMutation(probability=1.0 / (problem.number_of_variables * 2),
+                                                distribution_index=20),
+                    termination_criterion=StoppingByEvaluations(max_evaluations=2000)
+                )
+            ],
+            "mix_rate": 0.4,
+            "mixes_number": 1,
             "termination_criterion": StoppingByEvaluations(max_evaluations=2000)
         }
     )
     runner = MultiAlgorithmRunner(
         execution_units=[
-            first_execution_unit, second_execution_unit, third_execution_unit
+            first_execution_unit, second_execution_unit, third_execution_unit, fourth_execution_unit
         ]
     )
     print("Runner starts evaluation.")

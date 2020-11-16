@@ -23,6 +23,8 @@ class ClonalSelectionCognitive(Algorithm[FloatSolution, List[FloatSolution]]):
 
         self.clonal_selections = clonal_selections
         self.mix_rate = mix_rate
+        if mixes_number > len(clonal_selections):
+            raise Exception("mixes_number must be lower then number of populations.")
         self.mixes_number = mixes_number
         self.solutions: List[FloatSolution] = []
         self.evaluations = 0
@@ -77,8 +79,8 @@ class ClonalSelectionCognitive(Algorithm[FloatSolution, List[FloatSolution]]):
             cs.step()
 
         for i in range(self.number_of_populations):
-            for (j, _) in sorted(self.ranking[i],
-                                 key=lambda x: x[1])[:self.mixes_number]:
+            for (j, _) in sorted(self.ranking[i].items(),
+                                 key=lambda x: x[1], reverse=True)[:self.mixes_number]:
                 if random.random() < self.mix_rate:
                     affinity_i, affinity_j = self.mix(self.clonal_selections[i], self.clonal_selections[j])
                     self.ranking[i][j] = affinity_j
