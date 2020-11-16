@@ -81,7 +81,6 @@ class ClonalSelection(Algorithm[FloatSolution, List[FloatSolution]]):
 
     def affinity(self, solution: FloatSolution) -> float:
         direction = [-1 if d == self.problem.MINIMIZE else 1 for d in self.problem.obj_directions]
-        # TODO ask about how affinity should be implemented.
         return np.multiply(direction, self.problem.evaluate(solution).objectives)
 
     def clone(self, solution):

@@ -16,12 +16,14 @@ class ClonalSelectionCognitive(Algorithm[FloatSolution, List[FloatSolution]]):
     def __init__(self,
                  clonal_selections: List[ClonalSelection],
                  mix_rate: float,
+                 mixes_number: int,
                  termination_criterion: TerminationCriterion,
                  evaluator: Evaluator = store.default_evaluator):
         threading.Thread.__init__(self)
 
         self.clonal_selections = clonal_selections
         self.mix_rate = mix_rate
+        self.mixes_number = mixes_number
         self.solutions: List[FloatSolution] = []
         self.evaluations = 0
         self.start_computing_time = 0
@@ -37,6 +39,9 @@ class ClonalSelectionCognitive(Algorithm[FloatSolution, List[FloatSolution]]):
 
         self.problem = self.clonal_selections[0].problem
         self.number_of_populations = len(self.clonal_selections)
+        self.ranking = dict()
+        for i in range(self.number_of_populations):
+            self.ranking.update({i: {j: 0 for j in range(self.number_of_populations)}})
 
     def check_if_problems_ok(self):
         if not self.clonal_selections:
@@ -72,19 +77,24 @@ class ClonalSelectionCognitive(Algorithm[FloatSolution, List[FloatSolution]]):
             cs.step()
 
         for i in range(self.number_of_populations):
-            for j in range(i, self.number_of_populations):
+            for (j, _) in sorted(self.ranking[i],
+                                 key=lambda x: x[1])[:self.mixes_number]:
                 if random.random() < self.mix_rate:
-                    self.mix(self.clonal_selections[i], self.clonal_selections[j])
+                    affinity_i, affinity_j = self.mix(self.clonal_selections[i], self.clonal_selections[j])
+                    self.ranking[i][j] = affinity_j
+                    self.ranking[j][i] = affinity_i
         solution = []
         for cs in self.clonal_selections:
             solution += cs.solutions
         self.solutions = solution
 
     def mix(self, clonal_selection_1: ClonalSelection, clonal_selection_2: ClonalSelection):
-        position_1 = random.randint(0, len(clonal_selection_1.solutions)-1)
-        position_2 = random.randint(0, len(clonal_selection_2.solutions)-1)
+        position_1 = random.randint(0, len(clonal_selection_1.solutions) - 1)
+        position_2 = random.randint(0, len(clonal_selection_2.solutions) - 1)
         clonal_selection_1.solutions[position_1], clonal_selection_2.solutions[position_2] = \
             clonal_selection_2.solutions[position_2], clonal_selection_1.solutions[position_1]
+        return clonal_selection_1.affinity(clonal_selection_1.solutions[position_1]), \
+               clonal_selection_2.affinity(clonal_selection_2.solutions[position_2])
 
     def update_progress(self) -> None:
         """ Update the progress after each iteration. """
