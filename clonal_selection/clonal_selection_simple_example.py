@@ -5,7 +5,8 @@ from jmetal.core.solution import FloatSolution
 from jmetal.operator import PolynomialMutation
 from jmetal.util.termination_criterion import StoppingByEvaluations
 
-from clonal_selection import  ClonalSelection
+from clonal_selection.clonal_selection import ClonalSelection
+from framework.helpers.array_manipulation import initialize_vector
 
 
 class QuadraticFunction(FloatProblem):
@@ -16,8 +17,8 @@ class QuadraticFunction(FloatProblem):
         self.number_of_variables = 1
         self.number_of_constraints = 0
 
-        self.upper_bound = [upper_bound] * self.number_of_variables
-        self.lower_bound = [lower_bound] * self.number_of_variables
+        self.upper_bound = initialize_vector(upper_bound, self.number_of_variables)
+        self.lower_bound = initialize_vector(lower_bound, self.number_of_variables)
 
         self.obj_directions = [self.MINIMIZE]
 

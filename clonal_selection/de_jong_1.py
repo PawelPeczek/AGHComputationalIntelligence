@@ -5,7 +5,7 @@ from jmetal.core.solution import FloatSolution
 from jmetal.operator import PolynomialMutation
 from jmetal.util.termination_criterion import StoppingByEvaluations
 
-from clonal_selection import ClonalSelection
+from clonal_selection.clonal_selection import ClonalSelection
 
 
 class DeJong1(FloatProblem):

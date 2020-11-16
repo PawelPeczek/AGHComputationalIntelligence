@@ -1,14 +1,10 @@
-import random
-
-from jmetal.core.problem import FloatProblem
-from jmetal.core.solution import FloatSolution
 from jmetal.operator import PolynomialMutation
 from jmetal.util.termination_criterion import StoppingByEvaluations
 
-from clonal_selection import ClonalSelection
-from clonal_selection_cognitive import ClonalSelectionCognitive
-from de_jong_1 import DeJong1
 
+from clonal_selection.clonal_selection import ClonalSelection
+from clonal_selection.clonal_selection_cognitive import ClonalSelectionCognitive
+from clonal_selection.de_jong_1 import DeJong1
 
 if __name__ == '__main__':
     problem = DeJong1(-5.12, 5.12)
