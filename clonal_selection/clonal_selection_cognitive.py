@@ -9,7 +9,7 @@ from jmetal.core.solution import FloatSolution
 from jmetal.util.evaluator import Evaluator
 from jmetal.util.termination_criterion import TerminationCriterion
 
-from clonal_selection import ClonalSelection
+from clonal_selection.clonal_selection import ClonalSelection
 
 
 class ClonalSelectionCognitive(Algorithm[FloatSolution, List[FloatSolution]]):
