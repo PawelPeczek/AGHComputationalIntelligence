@@ -6,8 +6,8 @@ from clonal_selection.clonal_selection_cognitive import ClonalSelectionCognitive
 from clonal_selection.de_jong_1 import DeJong1
 
 if __name__ == '__main__':
-    problem = DeJong1(-5.12, 5.12)
-    max_evaluations = 2000
+    problem = DeJong1(-5.12, 5.12, number_of_variables=50)
+    max_evaluations = 20000
 
     clonal_selections = [
         ClonalSelection(
@@ -39,6 +39,8 @@ if __name__ == '__main__':
 
     print('Algorithm: ' + algorithm.get_name())
     print('Problem: ' + problem.get_name())
-    print('Solution: ' + str(result.variables[0]) + " " + str(result.variables[1]))
+    print('Solution: ' + str([var for var in result.variables]))
     print('Fitness:  ' + str(result.objectives[0]))
     print('Computing time: ' + str(algorithm.total_computing_time))
+
+    algorithm.draw_history()

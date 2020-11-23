@@ -42,14 +42,16 @@ class DeJong1(FloatProblem):
 
 
 if __name__ == '__main__':
-    problem = DeJong1(-5.12, 5.12)
-    max_evaluations = 25000
+    problem = DeJong1(-5.12, 5.12, number_of_variables=3)
+    max_evaluations = 200
 
     algorithm = ClonalSelection(
         problem=problem,
-        population_size=100,
+        population_size=200,
         selection_size=30,
-        mutation=PolynomialMutation(probability=1.0 / problem.number_of_variables, distribution_index=20),
+        random_cells_number=50,
+        clone_rate=6,
+        mutation=PolynomialMutation(probability=0.3, distribution_index=20),
         termination_criterion=StoppingByEvaluations(max_evaluations=max_evaluations)
     )
 
@@ -59,6 +61,8 @@ if __name__ == '__main__':
 
     print('Algorithm: ' + algorithm.get_name())
     print('Problem: ' + problem.get_name())
-    print('Solution: ' + str(result.variables[0]) + " " + str(result.variables[1]))
+    print('Solution: ' + str([var for var in result.variables]))
     print('Fitness:  ' + str(result.objectives[0]))
     print('Computing time: ' + str(algorithm.total_computing_time))
+
+    algorithm.draw_history()

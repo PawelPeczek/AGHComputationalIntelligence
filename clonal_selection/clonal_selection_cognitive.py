@@ -1,8 +1,11 @@
 import random
+import sys
 import threading
 import time
 from typing import List
 
+import matplotlib.pyplot as plt
+import numpy as np
 from jmetal.config import store
 from jmetal.core.algorithm import Algorithm
 from jmetal.core.solution import FloatSolution
@@ -43,7 +46,17 @@ class ClonalSelectionCognitive(Algorithm[FloatSolution, List[FloatSolution]]):
         self.number_of_populations = len(self.clonal_selections)
         self.ranking = dict()
         for i in range(self.number_of_populations):
-            self.ranking.update({i: {j: 0 for j in range(self.number_of_populations)}})
+            self.ranking.update({i: {j: sys.maxsize for j in range(self.number_of_populations)}})
+
+        self.history: List[FloatSolution] = []
+
+    def update_history(self):
+        max_fitness = self.get_result()
+        self.history.append(max_fitness)
+
+    def affinity(self, solution: FloatSolution) -> float:
+        direction = [-1 if d == self.problem.MINIMIZE else 1 for d in self.problem.obj_directions]
+        return np.multiply(direction, self.problem.evaluate(solution).objectives)
 
     def check_if_problems_ok(self):
         if not self.clonal_selections:
@@ -59,6 +72,7 @@ class ClonalSelectionCognitive(Algorithm[FloatSolution, List[FloatSolution]]):
         solution = []
         for cs in self.clonal_selections:
             solution += cs.create_initial_solutions()
+        # self.update_history()
         return solution
 
     def evaluate(self, solution_list: List[FloatSolution]) -> List[FloatSolution]:
@@ -89,6 +103,7 @@ class ClonalSelectionCognitive(Algorithm[FloatSolution, List[FloatSolution]]):
         for cs in self.clonal_selections:
             solution += cs.solutions
         self.solutions = solution
+        self.update_history()
 
     def mix(self, clonal_selection_1: ClonalSelection, clonal_selection_2: ClonalSelection):
         position_1 = random.randint(0, len(clonal_selection_1.solutions) - 1)
@@ -122,3 +137,11 @@ class ClonalSelectionCognitive(Algorithm[FloatSolution, List[FloatSolution]]):
 
     def get_name(self) -> str:
         return "CLONALG_COGNITIVE"
+
+    def draw_history(self):
+        plt.figure(figsize=(20, 20))
+        for o in range(self.problem.number_of_objectives):
+            plt.plot(range(len(self.history)), [s.objectives[o] for s in self.history])
+        plt.legend([f"objective {i}" for i in range(self.problem.number_of_objectives)])
+        plt.savefig(f"{self.get_name()}_history_{time.time()}.jpg")
+        plt.show()

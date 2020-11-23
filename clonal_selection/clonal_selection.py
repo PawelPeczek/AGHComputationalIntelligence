@@ -1,8 +1,9 @@
 import threading
 import time
 from typing import List
-import numpy as np
 
+import matplotlib.pyplot as plt
+import numpy as np
 from jmetal.config import store
 from jmetal.core.algorithm import Algorithm
 from jmetal.core.operator import Mutation
@@ -42,6 +43,11 @@ class ClonalSelection(Algorithm[FloatSolution, List[FloatSolution]]):
 
         self.termination_criterion = termination_criterion
         self.observable.register(termination_criterion)
+        self.history: List[FloatSolution] = []
+
+    def update_history(self):
+        max_fitness = self.get_result()
+        self.history.append(max_fitness)
 
     def create_initial_solutions(self) -> List[FloatSolution]:
         """ Creates the initial list of solutions of a metaheuristic. """
@@ -68,29 +74,35 @@ class ClonalSelection(Algorithm[FloatSolution, List[FloatSolution]]):
             clones += self.clone(p)
         temp_clones = []
         for clone in clones:
-            mutated_clone = self.mutator.execute(clone[1])
+            mutated_clone = self.mutator.execute(clone)
             temp_clones.append((self.affinity(mutated_clone), mutated_clone))
         clones = temp_clones
         temp_population = affinity_values + clones
         population = sorted(temp_population, key=lambda x: x[0], reverse=True)[:self.population_size]
-        population_randoms = [self.problem.create_solution() for x in range(self.random_cells_number)]
+        population_randoms = [self.problem.create_solution() for _ in range(self.random_cells_number)]
         randoms_affinity_values = [(self.affinity(solution), solution) for solution in population_randoms]
         population += randoms_affinity_values
-        population = sorted(population, key=lambda x: x[0], reverse=True)[:self.population_size]
-        self.solutions = [p[1] for p in population]
+        population = sorted(population, key=lambda x: x[0], reverse=True)
+        self.solutions = [p[1] for p in population[:self.population_size]]
+        self.update_history()
 
     def affinity(self, solution: FloatSolution) -> float:
         direction = [-1 if d == self.problem.MINIMIZE else 1 for d in self.problem.obj_directions]
         return np.multiply(direction, self.problem.evaluate(solution).objectives)
 
     def clone(self, solution):
-        clone_num = int(self.clone_rate / solution[0])
-        return [solution] * clone_num
+        #TODO
+        clone_num = int(self.clone_rate / (- solution[0]))
+        clones = []
+        for i in range(clone_num):
+            clones.append(solution[1].__copy__())
+        return clones
 
     def update_progress(self) -> None:
         """ Update the progress after each iteration. """
         self.evaluations += 1
-
+        if self.evaluations %10 == 0:
+            print(f"evaluation {self.evaluations}")
         observable_data = self.get_observable_data()
         observable_data['SOLUTIONS'] = self.solutions
         self.observable.notify_all(**observable_data)
@@ -109,3 +121,11 @@ class ClonalSelection(Algorithm[FloatSolution, List[FloatSolution]]):
 
     def get_name(self) -> str:
         return "CLONALG"
+
+    def draw_history(self):
+        # plt.figure(figsize=(20, 20))
+        for o in range(self.problem.number_of_objectives):
+            plt.plot(range(len(self.history)), [s.objectives[o] for s in self.history])
+        plt.legend([f"objective {i}" for i in range(self.problem.number_of_objectives)])
+        plt.savefig(f"{self.get_name()}_history_{time.time()}.jpg")
+        plt.show()
