@@ -7,3 +7,4 @@ pandas
 numpy
 matplotlib
 dataclasses_json
+jmetalpy==1.5.5
