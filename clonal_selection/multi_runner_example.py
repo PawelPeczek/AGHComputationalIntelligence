@@ -17,7 +17,7 @@ def run() -> None:
     target_path = os.path.join(RESULTS_DIR, f"test_{datetime.now().isoformat()}.json")
     first_execution_unit = ExecutionUnit(
         algorithm_cls=ClonalSelection,
-        problem_name="DeJong5"
+        problem_name="DeJong1"
     ).register_run(
         parameters={
             "problem": DeJong1(-5.12, 5.12),
