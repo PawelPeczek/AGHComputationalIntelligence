@@ -7,4 +7,10 @@ pandas
 numpy
 matplotlib
 dataclasses_json
-jmetalpy==1.5.5
+tqdm
+numpy
+pandas
+plotly>=3.3.0
+matplotlib
+scipy
+statsmodels
