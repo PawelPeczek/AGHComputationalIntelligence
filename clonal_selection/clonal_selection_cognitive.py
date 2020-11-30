@@ -2,17 +2,18 @@ import random
 import sys
 import threading
 import time
-from typing import List
+from typing import List, Tuple
 
 import matplotlib.pyplot as plt
 import numpy as np
+from sortedcontainers import SortedList
+
+from clonal_selection.clonal_selection import ClonalSelection
 from jmetal.config import store
 from jmetal.core.algorithm import Algorithm
 from jmetal.core.solution import FloatSolution
 from jmetal.util.evaluator import Evaluator
 from jmetal.util.termination_criterion import TerminationCriterion
-
-from clonal_selection.clonal_selection import ClonalSelection
 
 
 class ClonalSelectionCognitive(Algorithm[FloatSolution, List[FloatSolution]]):
@@ -29,7 +30,7 @@ class ClonalSelectionCognitive(Algorithm[FloatSolution, List[FloatSolution]]):
         if mixes_number > len(clonal_selections):
             raise Exception("mixes_number must be lower then number of populations.")
         self.mixes_number = mixes_number
-        self.solutions: List[FloatSolution] = []
+        self.solutions: SortedList[Tuple[FloatSolution, float]] = SortedList([], key=lambda x: -x[1])
         self.evaluations = 0
         self.start_computing_time = 0
         self.total_computing_time = 0
@@ -51,8 +52,8 @@ class ClonalSelectionCognitive(Algorithm[FloatSolution, List[FloatSolution]]):
         self.history: List[FloatSolution] = []
 
     def update_history(self):
-        max_fitness = self.get_result()
-        self.history.append(max_fitness)
+        best_solution = self.get_result()
+        self.history.append(best_solution)
 
     def affinity(self, solution: FloatSolution) -> float:
         direction = [-1 if d == self.problem.MINIMIZE else 1 for d in self.problem.obj_directions]
@@ -69,15 +70,19 @@ class ClonalSelectionCognitive(Algorithm[FloatSolution, List[FloatSolution]]):
 
     def create_initial_solutions(self) -> List[FloatSolution]:
         """ Creates the initial list of solutions of a metaheuristic. """
-        solution = []
+        solution = SortedList([], key=lambda x: -x[1])
         for cs in self.clonal_selections:
-            solution += cs.create_initial_solutions()
+            initial_solutions = cs.create_initial_solutions()
+            cs.solutions = initial_solutions
+            cs.solutions = cs.evaluate(cs.solutions)
+            solution.update(initial_solutions)
         # self.update_history()
         return solution
 
     def evaluate(self, solution_list: List[FloatSolution]) -> List[FloatSolution]:
         """ Evaluates a solution list. """
-        return self.evaluator.evaluate(solution_list, self.problem)
+        self.evaluator.evaluate([s[0] for s in solution_list], self.problem)
+        return solution_list
 
     def init_progress(self) -> None:
         """ Initialize the algorithm. """
@@ -95,30 +100,36 @@ class ClonalSelectionCognitive(Algorithm[FloatSolution, List[FloatSolution]]):
         for i in range(self.number_of_populations):
             for (j, _) in sorted(self.ranking[i].items(),
                                  key=lambda x: x[1], reverse=True)[:self.mixes_number]:
+                if i == j:
+                    continue
                 if random.random() < self.mix_rate:
                     affinity_i, affinity_j = self.mix(self.clonal_selections[i], self.clonal_selections[j])
                     self.ranking[i][j] = affinity_j
                     self.ranking[j][i] = affinity_i
-        solution = []
+        solution = SortedList([], key=lambda x: -x[1])
         for cs in self.clonal_selections:
-            solution += cs.solutions
+            solution.update(cs.solutions)
         self.solutions = solution
         self.update_history()
 
     def mix(self, clonal_selection_1: ClonalSelection, clonal_selection_2: ClonalSelection):
-        position_1 = random.randint(0, len(clonal_selection_1.solutions) - 1)
-        position_2 = random.randint(0, len(clonal_selection_2.solutions) - 1)
-        clonal_selection_1.solutions[position_1], clonal_selection_2.solutions[position_2] = \
-            clonal_selection_2.solutions[position_2], clonal_selection_1.solutions[position_1]
-        return clonal_selection_1.affinity(clonal_selection_1.solutions[position_1]), \
-               clonal_selection_2.affinity(clonal_selection_2.solutions[position_2])
+        best_solution_1 = clonal_selection_1.solutions[0]
+        best_solution_2 = clonal_selection_2.solutions[0]
+        worst_solution_1 = clonal_selection_1.solutions[-1]
+        worst_solution_2 = clonal_selection_2.solutions[-1]
+        clonal_selection_1.solutions.remove(worst_solution_1)
+        clonal_selection_1.solutions.add((best_solution_2[0].__copy__(), best_solution_2[1]))
+        clonal_selection_2.solutions.remove(worst_solution_2)
+        clonal_selection_2.solutions.add((best_solution_1[0].__copy__(), best_solution_1[1]))
+        return best_solution_2[1], best_solution_1[1]
 
     def update_progress(self) -> None:
         """ Update the progress after each iteration. """
         self.evaluations += 1
-
+        if self.evaluations % 100 == 0:
+            print(f"evaluation {self.evaluations}")
         observable_data = self.get_observable_data()
-        observable_data['SOLUTIONS'] = self.solutions
+        observable_data['SOLUTIONS'] = [s[0] for s in self.solutions]
         self.observable.notify_all(**observable_data)
 
     def get_observable_data(self) -> dict:
@@ -129,17 +140,13 @@ class ClonalSelectionCognitive(Algorithm[FloatSolution, List[FloatSolution]]):
                 'COMPUTING_TIME': time.time() - self.start_computing_time}
 
     def get_result(self) -> FloatSolution:
-        affinity_values = []
-        for cs in self.clonal_selections:
-            affinity_values += [(cs.affinity(solution), solution) for solution in cs.solutions]
-        result = sorted(affinity_values, key=lambda x: x[0], reverse=True)[0]
-        return result[1]
+        return self.solutions[0][0]
 
     def get_name(self) -> str:
         return "CLONALG_COGNITIVE"
 
     def draw_history(self):
-        plt.figure(figsize=(20, 20))
+        # plt.figure(figsize=(20, 20))
         for o in range(self.problem.number_of_objectives):
             plt.plot(range(len(self.history)), [s.objectives[o] for s in self.history])
         plt.legend([f"objective {i}" for i in range(self.problem.number_of_objectives)])

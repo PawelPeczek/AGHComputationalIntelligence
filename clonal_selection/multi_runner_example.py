@@ -1,9 +1,6 @@
 import os
 from datetime import datetime
 
-from jmetal.operator import PolynomialMutation
-from jmetal.util.termination_criterion import StoppingByEvaluations
-
 from clonal_selection.clonal_selection import ClonalSelection
 from clonal_selection.clonal_selection_cognitive import ClonalSelectionCognitive
 from clonal_selection.de_jong_1 import DeJong1
@@ -11,6 +8,8 @@ from clonal_selection.de_jong_5 import DeJong5
 from framework.config import RESULTS_DIR
 from framework.runner.multi_algorithm_runner import ExecutionUnit, \
     MultiAlgorithmRunner, save_execution_history
+from jmetal.operator import PolynomialMutation
+from jmetal.util.termination_criterion import StoppingByEvaluations
 
 
 def run() -> None:

@@ -6,7 +6,7 @@ from jmetal.util.termination_criterion import StoppingByEvaluations
 
 if __name__ == '__main__':
     problem = DeJong1(-5.12, 5.12, number_of_variables=50)
-    max_evaluations = 20000
+    max_evaluations = 2000
 
     clonal_selections = [
         ClonalSelection(
