@@ -12,7 +12,7 @@ from framework.runner.multi_algorithm_runner import ExecutionUnit, MultiAlgorith
 
 
 def run() -> None:
-    target_path = os.path.join(RESULTS_DIR, f"test_{datetime.now().isoformat()}.json")
+    target_path = os.path.join(RESULTS_DIR, "testDE.json")
 
     first_execution_unit = ExecutionUnit(
         algorithm_cls=DifferentialEvolution,
@@ -27,7 +27,7 @@ def run() -> None:
     ).register_run(
         parameters={
             "problem": DeJong1(-5.12, 5.12),
-            "each_species_size": 50,
+            "each_species_size": 10,
             "cr": 0.9, "f": 0.8,
             "max_iter": 500
         },
