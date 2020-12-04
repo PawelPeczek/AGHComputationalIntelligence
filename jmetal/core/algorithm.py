@@ -8,6 +8,8 @@ from jmetal.config import store
 from jmetal.core.problem import Problem
 from jmetal.core.solution import FloatSolution
 
+from random import shuffle
+
 LOGGER = logging.getLogger('jmetal')
 
 S = TypeVar('S')
@@ -24,7 +26,7 @@ R = TypeVar('R')
 
 class Algorithm(Generic[S, R], threading.Thread, ABC):
 
-    def __init__(self):
+    def __init__(self, no_species = 1, species_size = 0):
         threading.Thread.__init__(self)
 
         self.solutions: List[S] = []
@@ -33,6 +35,8 @@ class Algorithm(Generic[S, R], threading.Thread, ABC):
         self.total_computing_time = 0
 
         self.observable = store.default_observable
+        self.no_species = no_species
+        self.species_size = species_size
 
     @abstractmethod
     def create_initial_solutions(self) -> List[S]:
@@ -93,6 +97,25 @@ class Algorithm(Generic[S, R], threading.Thread, ABC):
     @abstractmethod
     def get_name(self) -> str:
         pass
+
+    def to_species_list(self, population) -> List[List[S]]:
+        species_list = [list() for i in range(self.no_species)]
+
+        for speciman in population:
+            species_list[speciman.species_index].append(speciman)
+
+        return species_list
+
+    def determine_species(self, population) -> None:
+        if self.no_species < 0 or self.species_size < 0:
+            return
+        
+        indexes = list(range(self.no_species)) * self.species_size
+        shuffle(indexes)
+
+        for i, speciman in enumarate(population):
+            speciman.species_index = indexes[i]
+
 
 
 class DynamicAlgorithm(Algorithm[S, R], ABC):

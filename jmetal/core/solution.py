@@ -23,6 +23,7 @@ class Solution(Generic[S], ABC):
         self.constraints = [0.0 for _ in range(self.number_of_constraints)]
         self.attributes = {}
         self.energy = initial_energy
+        self.species_index = -1
 
     def __eq__(self, solution) -> bool:
         if isinstance(solution, self.__class__):
