@@ -22,7 +22,8 @@ class ClonalSelectionCognitive(Algorithm[FloatSolution, List[FloatSolution]]):
                  mix_rate: float,
                  mixes_number: int,
                  termination_criterion: TerminationCriterion,
-                 evaluator: Evaluator = store.default_evaluator):
+                 evaluator: Evaluator = store.default_evaluator,
+                 debug: bool = False):
         threading.Thread.__init__(self)
 
         self.clonal_selections = clonal_selections
@@ -50,6 +51,7 @@ class ClonalSelectionCognitive(Algorithm[FloatSolution, List[FloatSolution]]):
             self.ranking.update({i: {j: sys.maxsize for j in range(self.number_of_populations)}})
 
         self.history: List[FloatSolution] = []
+        self.debug = debug
 
     def update_history(self):
         best_solution = self.get_result()
@@ -68,7 +70,7 @@ class ClonalSelectionCognitive(Algorithm[FloatSolution, List[FloatSolution]]):
                 return False
         return True
 
-    def create_initial_solutions(self) -> List[FloatSolution]:
+    def create_initial_solutions(self):
         """ Creates the initial list of solutions of a metaheuristic. """
         solution = SortedList([], key=lambda x: -x[1])
         for cs in self.clonal_selections:
@@ -79,7 +81,7 @@ class ClonalSelectionCognitive(Algorithm[FloatSolution, List[FloatSolution]]):
         # self.update_history()
         return solution
 
-    def evaluate(self, solution_list: List[FloatSolution]) -> List[FloatSolution]:
+    def evaluate(self, solution_list):
         """ Evaluates a solution list. """
         self.evaluator.evaluate([s[0] for s in solution_list], self.problem)
         return solution_list
@@ -126,7 +128,7 @@ class ClonalSelectionCognitive(Algorithm[FloatSolution, List[FloatSolution]]):
     def update_progress(self) -> None:
         """ Update the progress after each iteration. """
         self.evaluations += 1
-        if self.evaluations % 100 == 0:
+        if self.debug and self.evaluations % 100 == 0:
             print(f"evaluation {self.evaluations}")
         observable_data = self.get_observable_data()
         observable_data['SOLUTIONS'] = [s[0] for s in self.solutions]

@@ -12,19 +12,20 @@ from jmetal.core.operator import Mutation
 from jmetal.core.problem import FloatProblem
 from jmetal.core.solution import FloatSolution
 from jmetal.util.evaluator import Evaluator
-from jmetal.util.termination_criterion import TerminationCriterion
+from jmetal.util.termination_criterion import TerminationCriterion, StoppingByEvaluations
 
 
 class ClonalSelection(Algorithm[FloatSolution, List[FloatSolution]]):
     def __init__(self,
                  problem: FloatProblem,
                  population_size: int,
-                 termination_criterion: TerminationCriterion,
                  selection_size: int,
                  mutation: Mutation,
                  clone_rate: int = 20,
                  random_cells_number: int = 20,
-                 evaluator: Evaluator = store.default_evaluator):
+                 termination_criterion: TerminationCriterion = StoppingByEvaluations(max_evaluations=500),
+                 evaluator: Evaluator = store.default_evaluator,
+                 debug: bool = False):
         threading.Thread.__init__(self)
 
         self.solutions: SortedList[Tuple[FloatSolution, float]] = SortedList([], key=lambda x: -x[1])
@@ -46,6 +47,8 @@ class ClonalSelection(Algorithm[FloatSolution, List[FloatSolution]]):
         self.termination_criterion = termination_criterion
         self.observable.register(termination_criterion)
         self.history: List[FloatSolution] = []
+
+        self.debug = debug
 
     def update_history(self):
         best_solution = self.get_result()
@@ -114,7 +117,7 @@ class ClonalSelection(Algorithm[FloatSolution, List[FloatSolution]]):
     def update_progress(self) -> None:
         """ Update the progress after each iteration. """
         self.evaluations += 1
-        if self.evaluations % 100 == 0:
+        if self.debug and self.evaluations % 100 == 0:
             print(f"evaluation {self.evaluations}")
         observable_data = self.get_observable_data()
         observable_data['SOLUTIONS'] = [s[0] for s in self.solutions]

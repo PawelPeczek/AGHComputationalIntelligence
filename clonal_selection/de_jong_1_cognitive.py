@@ -11,16 +11,20 @@ if __name__ == '__main__':
     clonal_selections = [
         ClonalSelection(
             problem=problem,
-            population_size=100,
+            population_size=200,
             selection_size=30,
-            mutation=PolynomialMutation(probability=1.0 / problem.number_of_variables, distribution_index=20),
+            random_cells_number=50,
+            clone_rate=20,
+            mutation=PolynomialMutation(probability=1 / problem.number_of_variables, distribution_index=20),
             termination_criterion=StoppingByEvaluations(max_evaluations=max_evaluations)
         ),
         ClonalSelection(
             problem=problem,
             population_size=100,
-            selection_size=30,
-            mutation=PolynomialMutation(probability=1.0 / (problem.number_of_variables * 2), distribution_index=20),
+            selection_size=15,
+            random_cells_number=25,
+            clone_rate=10,
+            mutation=PolynomialMutation(probability=1 / problem.number_of_variables, distribution_index=20),
             termination_criterion=StoppingByEvaluations(max_evaluations=max_evaluations)
         )
     ]
@@ -29,7 +33,8 @@ if __name__ == '__main__':
         clonal_selections=clonal_selections,
         mix_rate=0.4,
         mixes_number=2,
-        termination_criterion=StoppingByEvaluations(max_evaluations=max_evaluations)
+        termination_criterion=StoppingByEvaluations(max_evaluations=max_evaluations),
+        debug=True
     )
 
     algorithm.run()
