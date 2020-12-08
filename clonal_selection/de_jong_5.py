@@ -12,7 +12,7 @@ from framework.helpers.array_manipulation import initialize_vector
 
 class DeJong5(FloatProblem):
 
-    def __init__(self, upper_bound, lower_bound):
+    def __init__(self, lower_bound, upper_bound):
         super(DeJong5, self).__init__()
         self.number_of_objectives = 1
         self.number_of_variables = 2
@@ -40,7 +40,7 @@ class DeJong5(FloatProblem):
         return solution
 
     def create_solution(self) -> FloatSolution:
-        new_solution = FloatSolution(self.lower_bound, self.lower_bound,
+        new_solution = FloatSolution(self.lower_bound, self.upper_bound,
                                      number_of_objectives=self.number_of_objectives)
         new_solution.variables[0] = random.uniform(self.lower_bound[0], self.upper_bound[0])
         new_solution.variables[1] = random.uniform(self.lower_bound[1], self.upper_bound[1])
