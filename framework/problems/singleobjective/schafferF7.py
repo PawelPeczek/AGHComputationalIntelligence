@@ -1,13 +1,13 @@
-from math import sqrt, cos
+from math import sqrt, sin
 
 from jmetal.core.problem import FloatProblem
 from jmetal.core.solution import FloatSolution
 
 
-class Griewank(FloatProblem):
+class SchafferF7(FloatProblem):
 
-    def __init__(self, number_of_variables: int = 10, lower_bound: float = -5.12, upper_bound: float = 5.12):
-        super(Griewank, self).__init__()
+    def __init__(self, number_of_variables: int = 10, lower_bound: float = -100.0, upper_bound: float = 100.0):
+        super(SchafferF7, self).__init__()
         assert lower_bound < upper_bound
         self.number_of_objectives = 1
         self.number_of_variables = number_of_variables
@@ -23,15 +23,20 @@ class Griewank(FloatProblem):
         FloatSolution.upper_bound = self.upper_bound
 
     def evaluate(self, solution: FloatSolution) -> FloatSolution:
-        sum = 0
-        for x in solution.variables:
-            sum += x * x
-        product = 1
-        for i in range(len(solution.variables)):
-            product *= cos(solution.variables[i] / sqrt(i + 1))
+        dim = solution.number_of_variables
 
-        solution.objectives[0] = 1 + sum / 4000 - product
+        part_1 = 1 / (dim - 1)
+
+        result = 0
+        for i in range(dim - 1):
+            part_2 = sqrt(solution.variables[i] ** 2 + solution.variables[i + 1] ** 2)
+            part_3 = sin(50.0 * part_2 ** 0.2) + 1
+
+            result += (part_1 * part_2 * part_3) ** 2
+
+        solution.objectives[0] = result
+
         return solution
 
     def get_name(self) -> str:
-        return 'Griewank'
+        return 'SchafferF7'
