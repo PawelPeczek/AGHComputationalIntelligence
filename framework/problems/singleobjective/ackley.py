@@ -1,13 +1,13 @@
-from math import sqrt, cos
+from math import sqrt, cos, pi, exp
 
 from jmetal.core.problem import FloatProblem
 from jmetal.core.solution import FloatSolution
 
 
-class Griewank(FloatProblem):
+class Ackley(FloatProblem):
 
-    def __init__(self, number_of_variables: int = 10, lower_bound: float = -5.12, upper_bound: float = 5.12):
-        super(Griewank, self).__init__()
+    def __init__(self, number_of_variables: int = 10, lower_bound: float = -32.768, upper_bound: float = 32.768):
+        super(Ackley, self).__init__()
         assert lower_bound < upper_bound
         self.number_of_objectives = 1
         self.number_of_variables = number_of_variables
@@ -23,15 +23,15 @@ class Griewank(FloatProblem):
         FloatSolution.upper_bound = self.upper_bound
 
     def evaluate(self, solution: FloatSolution) -> FloatSolution:
-        sum = 0
-        for x in solution.variables:
-            sum += x * x
-        product = 1
-        for i in range(len(solution.variables)):
-            product *= cos(solution.variables[i] / sqrt(i + 1))
+        dim = solution.number_of_variables
 
-        solution.objectives[0] = 1 + sum / 4000 - product
+        part_1 = -0.2 * sqrt(1/dim * sum([x**2 for x in solution.variables]))
+        part_2 = 1/dim * sum([cos(2 * pi * x) for x in solution.variables])
+        result = -20 * exp(part_1) - exp(part_2) + exp(1) + 20
+
+        solution.objectives[0] = result
+
         return solution
 
     def get_name(self) -> str:
-        return 'Griewank'
+        return 'Ackley'
