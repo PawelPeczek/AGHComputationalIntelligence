@@ -10,7 +10,8 @@ from framework.problems.singleobjective.griewank import Griewank
 
 import matplotlib.pyplot as plt
 
-if __name__ == '__main__':
+
+def test_griewank():
     problem = Griewank(number_of_variables=100, lower_bound=-100, upper_bound=100)
     max_evaluations = 500
 
@@ -93,3 +94,7 @@ if __name__ == '__main__':
     plt.title(f"{problem.get_name()} with {problem.number_of_variables} variables")
     plt.savefig(f"{problem.number_of_variables}_comparison_history_{time.time()}.jpg")
     plt.show()
+
+
+if __name__ == '__main__':
+    test_griewank()

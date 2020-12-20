@@ -1,7 +1,6 @@
 import time
 
 from clonal_selection.clonal_selection_cognitive import ClonalSelectionCognitive
-from framework.problems.singleobjective.ackley import Ackley
 from framework.problems.singleobjective.schwefel import Schwefel
 from jmetal.util.termination_criterion import StoppingByEvaluations
 
@@ -11,9 +10,10 @@ from clonal_selection.clonal_selection import ClonalSelection
 
 import matplotlib.pyplot as plt
 
-if __name__ == '__main__':
-    problem = Schwefel(number_of_variables=10, lower_bound=-500, upper_bound=500)
-    max_evaluations = 800
+
+def test_schwefel():
+    problem = Schwefel(number_of_variables=50, lower_bound=-500, upper_bound=500)
+    max_evaluations = 1000
 
     cs_algo = ClonalSelection(
         problem=problem,
@@ -103,3 +103,7 @@ if __name__ == '__main__':
     plt.title(f"{problem.get_name()} with {problem.number_of_variables} variables")
     plt.savefig(f"{problem.get_name()}_{problem.number_of_variables}_comparison_history_{time.time()}.jpg")
     plt.show()
+
+
+if __name__ == '__main__':
+    test_schwefel()
