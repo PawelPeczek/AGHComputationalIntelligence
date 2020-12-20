@@ -6,7 +6,7 @@ from jmetal.core.solution import FloatSolution
 
 class Griewank(FloatProblem):
 
-    def __init__(self, number_of_variables: int = 10):
+    def __init__(self, number_of_variables: int = 10, lower_bound=-5.12, upper_bound=5.12):
         super(Griewank, self).__init__()
         self.number_of_objectives = 1
         self.number_of_variables = number_of_variables
@@ -15,8 +15,8 @@ class Griewank(FloatProblem):
         self.obj_directions = [self.MINIMIZE]
         self.obj_labels = ['f(x)']
 
-        self.lower_bound = [-5.12 for _ in range(number_of_variables)]
-        self.upper_bound = [5.12 for _ in range(number_of_variables)]
+        self.lower_bound = [lower_bound for _ in range(number_of_variables)]
+        self.upper_bound = [upper_bound for _ in range(number_of_variables)]
 
         FloatSolution.lower_bound = self.lower_bound
         FloatSolution.upper_bound = self.upper_bound
