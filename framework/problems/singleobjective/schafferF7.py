@@ -29,8 +29,9 @@ class SchafferF7(FloatProblem):
 
         result = 0
         for i in range(dim - 1):
-            part_2 = sqrt(solution.variables[i] ** 2 + solution.variables[i + 1] ** 2)
-            part_3 = sin(50.0 * part_2 ** 0.2) + 1
+            si = (solution.variables[i] ** 2 + solution.variables[i + 1] ** 2) ** (1 / 2)
+            part_2 = si ** (1 / 2)
+            part_3 = sin(50.0 * (si ** 0.2)) + 1
 
             result += (part_1 * part_2 * part_3) ** 2
 
