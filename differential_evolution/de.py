@@ -88,12 +88,19 @@ class DifferentialEvolution(EvolutionaryAlgorithm[FloatSolution, FloatSolution])
             for index_dim in range(self.dims):
                 if random_weights[index_dim] < self.cr or index_dim == dim:
                     if self.is_augmented_reproduction:
-                        value = 0
+                        value_of_partners = 0
                         for i, partner in enumerate(partners[1:]):
-                            value += weights[i] * partner.variables[index_dim] * (math.pow(-1, random.random() > 0.5))
-                        offspring.variables[index_dim] = partners[0].variables[index_dim] + self.f * value
+                            value_of_partners += weights[i] * partner.variables[index_dim] * (math.pow(-1, random.random() > 0.5))
+                        value = partners[0].variables[index_dim] + self.f * value_of_partners
                     else:
-                        offspring.variables[index_dim] = partners[0].variables[index_dim] + self.f * (partners[1].variables[index_dim] - partners[2].variables[index_dim])
+                        value = partners[0].variables[index_dim] + self.f * (partners[1].variables[index_dim] - partners[2].variables[index_dim])
+
+                    if value < offspring.lower_bound[index_dim]:
+                        value = offspring.lower_bound[index_dim]
+                    if value > offspring.upper_bound[index_dim]:
+                        value = offspring.upper_bound[index_dim]
+
+                    offspring.variables[index_dim] = value
             
             offspring_population.append(offspring)
             
