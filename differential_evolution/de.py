@@ -178,7 +178,18 @@ class DifferentialEvolution(EvolutionaryAlgorithm[FloatSolution, FloatSolution])
         return sorted(self.solutions, key=functools.cmp_to_key(self.compare))[0]
 
     def get_name(self) -> str:
-        return "DE"
+        return {
+            "AlgorithmName": "DifferentialEvolution",
+            "each_species_size": self.each_species_size,
+            "max_iter": self.max_iter,
+            "cr": self.cr,
+            "f": self.f,
+            "meeting_frequency": self.meeting_frequency,
+            "exchange_rate": self.exchange_rate,
+            "no_species": self.no_species,
+            "is_simulated_annealing": self.is_simulated_annealing,
+            "number_of_partners": self.number_of_partners
+        }
 
     def calculate_init_search_radius(self) -> float:
         sum_of_squares = 0
