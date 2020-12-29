@@ -162,6 +162,7 @@ class DifferentialEvolution(EvolutionaryAlgorithm[FloatSolution, FloatSolution])
         self.observable.notify_all(**observable_data)
         ###
         self.iter = 0
+        self.best_fitness_per_iteration = list()
 
     def stopping_condition_is_met(self) -> bool:
         """ The stopping condition is met or not. """
@@ -173,6 +174,7 @@ class DifferentialEvolution(EvolutionaryAlgorithm[FloatSolution, FloatSolution])
         observable_data = self.get_observable_data()
         self.observable.notify_all(**observable_data)
         self.iter += 1
+        self.best_fitness_per_iteration.append(self.get_result().objectives[0])
 
     def get_result(self) -> FloatSolution:
         return sorted(self.solutions, key=functools.cmp_to_key(self.compare))[0]
