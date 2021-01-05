@@ -9,10 +9,13 @@ import random
 
 class CognitivePolynomialMutation(Mutation[FloatSolution]):
     def __init__(self, probability: float, distribution_index: float = 0.20,
-    look_at_others_probability: float = 0.2):
+    look_at_others_probability: float = 0.2,
+    others_number: int = 140):
         super(CognitivePolynomialMutation, self).__init__(probability=probability)
         self.distribution_index = distribution_index
         self.look_at_others_probability = look_at_others_probability
+        self.others_number = others_number
+
         self.follow_solutions = []
         self.steps = 0
         self.avg = 0
@@ -24,9 +27,9 @@ class CognitivePolynomialMutation(Mutation[FloatSolution]):
         if copied_solution not in self.follow_solutions:
             self.follow_solutions.append(copied_solution)
         self.follow_solutions.sort(key=lambda x: x.objectives[0], reverse=False)
-        self.follow_solutions = self.follow_solutions[:140]
+        self.follow_solutions = self.follow_solutions[:self.others_number]
 
-        if (self.avg_counter % 140 == 0):
+        if (self.avg_counter % self.others_number == 0):
             self.avg_counter = 0
 
         self.avg = (self.avg * self.avg_counter + copied_solution.objectives[0]) / (self.avg_counter + 1)
@@ -37,8 +40,9 @@ class CognitivePolynomialMutation(Mutation[FloatSolution]):
 
         for i in range(solution.number_of_variables):
             rand = random.random()
-
-            if rand <= self.probability or self.steps < 140:
+            
+                                         # v not enough solutions to calculate avg
+            if rand <= self.probability or self.steps < self.others_number:
                 y = solution.variables[i]
                 yl, yu = solution.lower_bound[i], solution.upper_bound[i]
 
@@ -68,17 +72,18 @@ class CognitivePolynomialMutation(Mutation[FloatSolution]):
             elif rand <= self.probability + self.look_at_others_probability:
                 diff = vector[i] - solution.variables[i]
                 calculated_value = solution.variables[i] + 0.1 * diff
-                solution.variables[i] = max(min(calculated_value,solution.upper_bound[i]),solution.lower_bound[i])
+                solution.variables[i] = max(min(calculated_value, solution.upper_bound[i]), solution.lower_bound[i])
 
         return solution
-    
+
     # fitness -> 0, m -> 1
     # fitness -> inf, m -> -0.001
-    def get_factor_on_fitness(self, fitness, avg_fitness):
+    def get_fitness_factor(self, fitness, avg_fitness):
         if (fitness <= avg_fitness):
             return 1 - (fitness / avg_fitness)
         else:
             return 0 * (fitness / avg_fitness)
+            #      ^ actually moving away from solutios below average doesn't work
 
     def get_follow_vector(self):
         avg_fitness = self.avg
@@ -88,14 +93,14 @@ class CognitivePolynomialMutation(Mutation[FloatSolution]):
 
         for sol in self.follow_solutions:
             fitness = sol.objectives[0]
-            factor = self.get_factor_on_fitness(fitness, avg_fitness)
+            factor = self.get_fitness_factor(fitness, avg_fitness)
             total_factor += abs(factor)
 
             for i in range(no_of_variables):
                 vector[i] += factor * sol.variables[i]
         
-        for i in range(len(vector)):
-            if (total_factor):
+        if (total_factor):
+            for i in range(len(vector)):
                 vector[i] /= total_factor
 
         return vector

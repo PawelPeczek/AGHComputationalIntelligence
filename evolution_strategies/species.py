@@ -42,6 +42,8 @@ class SocioCognitiveEvolutionStrategy(Algorithm[FloatSolution, FloatSolution]):
         self.population_generator = population_generator
         self.population_evaluator = population_evaluator
 
+        self.history = []
+
     def create_initial_solutions(self):
         """ Creates the initial list of solutions of a metaheuristic. """
         all_solutions = []
@@ -75,6 +77,11 @@ class SocioCognitiveEvolutionStrategy(Algorithm[FloatSolution, FloatSolution]):
         self.solutions = all_solutions
         self.solutions.sort(key=lambda x: x.objectives[0], reverse=False)
         ## TODO: update mutation population
+        self.update_history()
+    
+    def update_history(self):
+        best_fitness = self.solutions[0].objectives[0]
+        self.history.append(best_fitness)
 
     def get_observable_data(self) -> dict:
         return {'PROBLEM': self.problem,
@@ -110,6 +117,9 @@ class SocioCognitiveEvolutionStrategy(Algorithm[FloatSolution, FloatSolution]):
     def stopping_condition_is_met(self) -> bool:
         """ The stopping condition is met or not. """
         return self.termination_criterion.is_met
+    
+    def get_history(self):
+        return self.history
 
     def get_result(self):
         return self.solutions[0]
