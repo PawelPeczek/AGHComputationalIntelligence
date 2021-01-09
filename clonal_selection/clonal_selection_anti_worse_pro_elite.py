@@ -80,17 +80,22 @@ class ClonalSelectionAntiWorseProElite(ClonalSelection):
             rand = random.random()
             if rand <= self.mutation_probability:
                 # odpychanie
-                if mean_worse_specie[i] > specie.variables[i]:
-                    specie.variables[i] -= (specie.variables[i] - specie.lower_bound[i]) * random.random()
-                else:
-                    specie.variables[i] += (specie.upper_bound[i] - specie.variables[i]) * random.random()
+                if random.random() < 0.333:
+                    if mean_worse_specie[i] > specie.variables[i]:
+                        specie.variables[i] -= (specie.variables[i] - specie.lower_bound[i]) * random.random()
+                    else:
+                        specie.variables[i] += (specie.upper_bound[i] - specie.variables[i]) * random.random()
 
                 # przyciąganie
-                if mean_elite_specie[i] > specie.variables[i]:
-                    specie.variables[i] += (specie.variables[i] - specie.lower_bound[i]) * random.random()
-                else:
-                    specie.variables[i] -= (specie.upper_bound[i] - specie.variables[i]) * random.random()
-
+                if random.random() < 0.333:
+                    if mean_elite_specie[i] > specie.variables[i]:
+                        specie.variables[i] += (specie.upper_bound[i] - specie.variables[i]) * random.random()
+                    else:
+                        specie.variables[i] -= (specie.variables[i] - specie.lower_bound[i]) * random.random()
+                # losowa mutacja
+                if random.random() < 0.333:
+                    specie.variables[i] = specie.lower_bound[i] + \
+                                            (specie.upper_bound[i] - specie.lower_bound[i]) * random.random()
 
         return specie
 
