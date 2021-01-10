@@ -8,7 +8,9 @@ from jmetal.util.generator import Generator, RandomGenerator
 from jmetal.util.termination_criterion import TerminationCriterion
 from jmetal.util.evaluator import Evaluator, SequentialEvaluator
 from copy import copy
+import itertools
 import time
+import numpy as np
 
 
 class Emas(Algorithm[Solution, Solution], threading.Thread):
@@ -25,9 +27,13 @@ class Emas(Algorithm[Solution, Solution], threading.Thread):
                  neighbours_operator: Neighbours,
                  reproduction_operator: Reproduction,
                  population_generator: Generator = RandomGenerator(),
-                 population_evaluator: Evaluator = SequentialEvaluator()):
+                 population_evaluator: Evaluator = SequentialEvaluator(),
+                 no_species=1,
+                 species_size=0):
 
-        super(Emas, self).__init__()
+        assert species_size * no_species == initial_population_size
+
+        super(Emas, self).__init__(no_species, species_size)
         self.reproduction_operator = reproduction_operator
         self.reproduction_threshold = reproduction_threshold
         self.initial_inidividual_energy = initial_inidividual_energy
@@ -41,6 +47,7 @@ class Emas(Algorithm[Solution, Solution], threading.Thread):
         self.death_operator = death_operator
         self.energy_exchange_operator = energy_exchange_operator
 
+        self.species_fitness = {i: 0.0 for i in range(no_species)}
 
     def create_initial_solutions(self) -> List[Solution]:
         initial_solutions = [self.population_generator.new(self.problem)
@@ -49,6 +56,7 @@ class Emas(Algorithm[Solution, Solution], threading.Thread):
         for solution in initial_solutions:
             solution.energy = float(self.initial_inidividual_energy)
 
+        self.determine_species(initial_solutions)
         return initial_solutions
 
     def evaluate(self, solution_list: List[Solution]) -> List[Solution]:
@@ -62,22 +70,31 @@ class Emas(Algorithm[Solution, Solution], threading.Thread):
         observable_data = self.get_observable_data()
         self.observable.notify_all(**observable_data)
 
-    def _neighbours_operation(self, solution_list: List[Solution], operator: Operator[Solution, Solution]) -> List[Solution]:
+    def _update_species_fitness(self, solution_list) -> None:
+        separated_solutions = self.to_species_list(solution_list)
+        for species in range(self.no_species):
+            self.species_fitness[species] = np.average(
+                list(map(lambda x: x.objectives[0], separated_solutions[species])))
+            for x in separated_solutions[species]:
+                x.species_average_fitness = self.species_fitness[species]
+
+    def _neighbours_operation(self, solution_list: List[Solution], operator: Operator[Solution, Solution]) -> List[
+        Solution]:
         solution_list = [copy(x) for x in solution_list]
 
-        done = []
+        all_done = []
 
         while solution_list:
             neigh_a = solution_list.pop()
             neigh_b = self.neighbours_operator.execute((neigh_a, solution_list))
             if neigh_b is None:
-                done += [neigh_a]
+                all_done += [neigh_a]
                 break
 
             solution_list.remove(neigh_b)
-            done += operator.execute([neigh_a, neigh_b])
+            all_done += operator.execute([neigh_a, neigh_b])
 
-        return done
+        return all_done
 
     def exchange_energy(self, solution_list: List[Solution]) -> List[Solution]:
         copied_solution_list = [copy(x) for x in solution_list]
@@ -99,6 +116,9 @@ class Emas(Algorithm[Solution, Solution], threading.Thread):
     def step(self) -> None:
         x = self.solutions
         x = self.evaluate(x)
+        self._update_species_fitness(x)
+        print(self.species_fitness)
+        print(list(map(lambda species: len(species), self.to_species_list(x))))
         x = self.exchange_energy(x)
         x = self.kill(x)
         x = self.reproduce(x)
@@ -115,6 +135,7 @@ class Emas(Algorithm[Solution, Solution], threading.Thread):
         return {'PROBLEM': self.problem,
                 'EVALUATIONS': self.evaluations,
                 'SOLUTIONS': self.get_result(),
+                'SPECIES': self.get_result().species_index,
                 'COMPUTING_TIME': time.time() - self.start_computing_time}
 
     def get_result(self) -> Solution:

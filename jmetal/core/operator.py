@@ -73,7 +73,7 @@ class Neighbours(Operator[Tuple[S, List[S]], Optional[S]], ABC):
     """Get neighbouring individuals"""
 
 
-class Reproduction(Operator[List[S], List[S]]):
+class Reproduction(Operator[List[S], List[S]], ABC):
     """Reproduction operator"""
 
 

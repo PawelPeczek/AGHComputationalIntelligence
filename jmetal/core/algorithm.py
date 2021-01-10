@@ -113,7 +113,7 @@ class Algorithm(Generic[S, R], threading.Thread, ABC):
         indexes = list(range(self.no_species)) * self.species_size
         shuffle(indexes)
 
-        for i, speciman in enumarate(population):
+        for i, speciman in enumerate(population):
             speciman.species_index = indexes[i]
 
 

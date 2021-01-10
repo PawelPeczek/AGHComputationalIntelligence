@@ -24,6 +24,7 @@ class Solution(Generic[S], ABC):
         self.attributes = {}
         self.energy = initial_energy
         self.species_index = -1
+        self.species_average_fitness = None
 
     def __eq__(self, solution) -> bool:
         if isinstance(solution, self.__class__):
@@ -61,6 +62,8 @@ class BinarySolution(Solution[BitSet]):
         new_solution.objectives = self.objectives[:]
         new_solution.variables = self.variables[:]
         new_solution.energy = self.energy
+        new_solution.species_index = self.species_index
+        new_solution.species_average_fitness = self.species_average_fitness
 
         new_solution.attributes = self.attributes.copy()
 
@@ -99,6 +102,8 @@ class FloatSolution(Solution[float]):
         new_solution.variables = self.variables[:]
         new_solution.constraints = self.constraints[:]
         new_solution.energy = self.energy
+        new_solution.species_index = self.species_index
+        new_solution.species_average_fitness = self.species_average_fitness
 
         new_solution.attributes = self.attributes.copy()
 
@@ -124,6 +129,7 @@ class IntegerSolution(Solution[int]):
         new_solution.variables = self.variables[:]
         new_solution.constraints = self.constraints[:]
         new_solution.energy = self.energy
+        new_solution.species_index = self.species_index
 
         new_solution.attributes = self.attributes.copy()
 
@@ -161,6 +167,8 @@ class CompositeSolution(Solution):
         new_solution.objectives = self.objectives[:]
         new_solution.constraints = self.constraints[:]
         new_solution.attributes = self.attributes.copy()
+        new_solution.energy = self.energy
+        new_solution.species_index = self.species_index
 
         return new_solution
 
@@ -178,6 +186,7 @@ class PermutationSolution(Solution):
         new_solution.objectives = self.objectives[:]
         new_solution.variables = self.variables[:]
         new_solution.energy = self.energy
+        new_solution.species_index = self.species_index
 
         new_solution.attributes = self.attributes.copy()
 

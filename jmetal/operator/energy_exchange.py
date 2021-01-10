@@ -6,7 +6,7 @@ from jmetal.util.comparator import DominanceComparator
 
 
 class FractionEnergyExchange(EnergyExchange[Solution]):
-    def __init__(self, exchange_fraction: float, ):
+    def __init__(self, exchange_fraction: float):
         self.exchange_factor = exchange_fraction
 
     def execute(self, individuals: List[Solution]) -> List[Solution]:

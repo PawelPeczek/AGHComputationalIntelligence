@@ -17,9 +17,11 @@ if __name__ == '__main__':
         reproduction_threshold=20,
         energy_exchange_operator=FractionEnergyExchange(0.5),
         death_operator=ThresholdDeath(threshold=5, neighbours_operator=RandomNeighbours()),
-        termination_criterion=StoppingByEvaluations(max_evaluations=25000),
+        termination_criterion=StoppingByEvaluations(max_evaluations=1000),
         neighbours_operator=RandomNeighbours(),
-        reproduction_operator=FractionEnergyReproduction(0.5, BitFlipMutation(0.5), SPXCrossover(0.5))
+        reproduction_operator=FractionEnergyReproduction(0.5, BitFlipMutation(0.5), SPXCrossover(0.5)),
+        no_species=4,
+        species_size=250
     )
 
     algorithm.run()

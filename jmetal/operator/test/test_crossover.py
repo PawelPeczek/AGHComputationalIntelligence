@@ -5,7 +5,7 @@ from unittest import mock
 from jmetal.core.operator import Crossover
 from jmetal.core.solution import BinarySolution, PermutationSolution, FloatSolution, CompositeSolution, IntegerSolution
 from jmetal.operator.crossover import NullCrossover, SPXCrossover, CXCrossover, PMXCrossover, SBXCrossover, \
-    CompositeCrossover, IntegerSBXCrossover
+    CompositeCrossover, IntegerSBXCrossover, DiscreteCrossover
 from jmetal.util.ckecking import NoneParameterException, EmptyCollectionException, InvalidConditionException
 
 
@@ -29,6 +29,31 @@ class NullCrossoverTestCases(unittest.TestCase):
         offspring = operator.execute([solution1, solution2])
         self.assertEqual([True, False, False, True, True, False], offspring[0].variables[0])
         self.assertEqual([False, True, False, False, True, False], offspring[1].variables[0])
+
+
+
+class DiscreteCrossoverTestCases(unittest.TestCase):
+
+
+    def test_1_prob(self):
+        operator = DiscreteCrossover(1.0)
+        solution1 = BinarySolution(number_of_variables=1, number_of_objectives=1)
+        solution1.variables[0] = [True, False, False, True, True, False]
+        solution2 = BinarySolution(number_of_variables=1, number_of_objectives=1)
+        solution2.variables[0] = [False, True, False, False, True, False]
+
+        offspring = operator.execute([solution1, solution2])
+        self.assertEqual([True, False, False, True, True, False], offspring[0].variables[0])
+
+    def test_0_prob(self):
+        operator = DiscreteCrossover(0)
+        solution1 = BinarySolution(number_of_variables=1, number_of_objectives=1)
+        solution1.variables[0] = [True, False, False, True, True, False]
+        solution2 = BinarySolution(number_of_variables=1, number_of_objectives=1)
+        solution2.variables[0] = [False, True, False, False, True, False]
+
+        offspring = operator.execute([solution1, solution2])
+        self.assertEqual([False, True, False, False, True, False], offspring[0].variables[0])
 
 
 class SinglePointTestCases(unittest.TestCase):

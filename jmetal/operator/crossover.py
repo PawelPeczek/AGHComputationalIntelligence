@@ -6,6 +6,7 @@ from jmetal.core.operator import Crossover
 from jmetal.core.solution import Solution, FloatSolution, BinarySolution, PermutationSolution, IntegerSolution, \
     CompositeSolution
 from jmetal.util.ckecking import Check
+import numpy as np
 
 """
 .. module:: crossover
@@ -25,6 +26,32 @@ class NullCrossover(Crossover[Solution, Solution]):
             raise Exception('The number of parents is not two: {}'.format(len(parents)))
 
         return parents
+
+    def get_number_of_parents(self) -> int:
+        return 2
+
+    def get_number_of_children(self) -> int:
+        return 2
+
+    def get_name(self):
+        return 'Null crossover'
+
+
+class DiscreteCrossover(Crossover[Solution, Solution]):
+    def __init__(self, probability):
+        # probability here is the chance of the first solution to be copied as the child
+        super(DiscreteCrossover, self).__init__(probability=probability)
+
+    def execute(self, parents: List[Solution]) -> List[Solution]:
+        if len(parents) != 2:
+            raise Exception('The number of parents is not two: {}'.format(len(parents)))
+
+        copied_parents = [copy.copy(parent) for parent in parents]
+
+        if np.random.uniform() <= self.probability:
+            return 2 * [copied_parents[0]]
+        else:
+            return 2 * [copied_parents[1]]
 
     def get_number_of_parents(self) -> int:
         return 2
@@ -413,7 +440,7 @@ class DifferentialEvolutionCrossover(Crossover[FloatSolution, FloatSolution]):
 class CompositeCrossover(Crossover[CompositeSolution, CompositeSolution]):
     __EPS = 1.0e-14
 
-    def __init__(self, crossover_operator_list:[Crossover]):
+    def __init__(self, crossover_operator_list: [Crossover]):
         super(CompositeCrossover, self).__init__(probability=1.0)
 
         Check.is_not_none(crossover_operator_list)
