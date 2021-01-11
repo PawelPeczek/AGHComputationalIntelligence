@@ -13,7 +13,7 @@ import time
 from jmetal.core.solution import FloatSolution
 from jmetal.core.algorithm import Algorithm
 
-from cognitive_mutation import CognitivePolynomialMutation
+from evolution_strategies.cognitive_mutation import CognitivePolynomialMutation
 
 StrategyParams = namedtuple('StrategyParams', ['mu', 'lambda_', 'elitist', 'look_at_others_probability'])
 

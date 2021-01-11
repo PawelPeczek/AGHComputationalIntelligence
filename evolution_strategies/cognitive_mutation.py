@@ -1,11 +1,8 @@
-from jmetal.algorithm.singleobjective.evolution_strategy import EvolutionStrategy
-from jmetal.problem import Sphere
-from jmetal.problem.singleobjective.unconstrained import Rastrigin
-from jmetal.util.termination_criterion import StoppingByEvaluations
 from jmetal.core.operator import Mutation
 from jmetal.core.solution import FloatSolution
 from jmetal.util.ckecking import Check
 import random
+
 
 class CognitivePolynomialMutation(Mutation[FloatSolution]):
     def __init__(self, probability: float, distribution_index: float = 0.20,

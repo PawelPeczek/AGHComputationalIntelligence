@@ -1,11 +1,9 @@
-from species import StrategyParams, SocioCognitiveEvolutionStrategy
+from evolution_strategies.species import StrategyParams, SocioCognitiveEvolutionStrategy
 from jmetal.util.termination_criterion import StoppingByEvaluations
-from plot import draw_comparision_plot
-from evolution_strategy import EvolutionStrategyWithHistory
+from evolution_strategies.plot import draw_comparision_plot
+from evolution_strategies.evolution_strategy import EvolutionStrategyWithHistory
 from jmetal.operator import PolynomialMutation
 
-# problems
-from jmetal.problem import Sphere
 from jmetal.problem.singleobjective.unconstrained import Rastrigin
 
 if __name__ == '__main__':
