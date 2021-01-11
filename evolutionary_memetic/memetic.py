@@ -135,3 +135,31 @@ class MemeticAlgorithm(EvolutionaryAlgorithm[S, R], ABC):
 
     def get_name(self) -> str:
         return 'Memetic algorithm'
+
+
+class MemeticAlgorithm2(MemeticAlgorithm[S, R]):
+    def __init__(self,
+                 problem: Problem[S],
+                 initial_population: List[S],
+                 offspring_population_size: int,
+                 mutation: Mutation,
+                 crossover: Crossover,
+                 selection: Selection,
+                 local_search: MemeticLocalSearch,
+                 termination_criterion: TerminationCriterion = store.default_termination_criteria,
+                 evaluator: Evaluator = store.default_evaluator):
+        super(MemeticAlgorithm2, self).__init__(
+            problem=problem,
+            population_size=len(initial_population),
+            offspring_population_size=offspring_population_size,
+            mutation=mutation,
+            crossover=crossover,
+            selection=selection,
+            local_search=local_search,
+            termination_criterion=termination_criterion,
+            evaluator=evaluator)
+
+        self.solutions = initial_population
+
+    def create_initial_solutions(self) -> List[S]:
+        return self.solutions
