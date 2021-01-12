@@ -1,5 +1,7 @@
 from typing import TypeVar, List
 
+from jmetal.core.solution import FloatSolution
+
 from jmetal.config import store
 from jmetal.core.algorithm import EvolutionaryAlgorithm
 from jmetal.core.operator import Mutation, Crossover, Selection
@@ -38,6 +40,7 @@ class GeneticAlgorithm(EvolutionaryAlgorithm[S, R]):
         self.mutation_operator = mutation
         self.crossover_operator = crossover
         self.selection_operator = selection
+        self.history: List[FloatSolution] = []
 
         self.population_generator = population_generator
         self.population_evaluator = population_evaluator
@@ -45,12 +48,14 @@ class GeneticAlgorithm(EvolutionaryAlgorithm[S, R]):
         self.termination_criterion = termination_criterion
         self.observable.register(termination_criterion)
 
+
         self.mating_pool_size = \
             self.offspring_population_size * \
             self.crossover_operator.get_number_of_parents() // self.crossover_operator.get_number_of_children()
 
         if self.mating_pool_size < self.crossover_operator.get_number_of_children():
             self.mating_pool_size = self.crossover_operator.get_number_of_children()
+
 
     def create_initial_solutions(self) -> List[S]:
         return [self.population_generator.new(self.problem)
@@ -61,6 +66,9 @@ class GeneticAlgorithm(EvolutionaryAlgorithm[S, R]):
 
     def stopping_condition_is_met(self) -> bool:
         return self.termination_criterion.is_met
+
+    def update_history(self):
+        self.history.append(self.get_result())
 
     def selection(self, population: List[S]):
         mating_population = []
@@ -91,6 +99,7 @@ class GeneticAlgorithm(EvolutionaryAlgorithm[S, R]):
                 if len(offspring_population) >= self.offspring_population_size:
                     break
 
+        self.update_history()
         return offspring_population
 
     def replacement(self, population: List[S], offspring_population: List[S]) -> List[S]:

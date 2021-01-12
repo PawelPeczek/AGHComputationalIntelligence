@@ -9,7 +9,7 @@ from jmetal.config import store
 from jmetal.core.algorithm import EvolutionaryAlgorithm, S, R
 from jmetal.core.operator import Mutation, Crossover, Selection
 from jmetal.core.problem import Problem
-from jmetal.core.solution import Solution
+from jmetal.core.solution import Solution, FloatSolution
 from jmetal.util.comparator import Comparator
 from jmetal.util.evaluator import Evaluator
 from jmetal.util.termination_criterion import TerminationCriterion, StoppingByEvaluations
@@ -79,6 +79,7 @@ class MemeticAlgorithm(EvolutionaryAlgorithm[S, R], ABC):
         self.crossover_op = crossover
         self.selection_op = selection
         self.local_search = local_search
+        self.history: List[FloatSolution] = []
 
         # self.crossover_rate = crossover_rate  # To be used
         # self.mutation_rate = mutation_rate  # To be used
@@ -94,6 +95,7 @@ class MemeticAlgorithm(EvolutionaryAlgorithm[S, R], ABC):
 
         if self.selection_size < self.crossover_op.get_number_of_children():
             self.selection_size = self.crossover_op.get_number_of_children()
+
 
     def selection(self, population: List[S]):
         return [self.selection_op.execute(population) for _ in range(self.selection_size)]

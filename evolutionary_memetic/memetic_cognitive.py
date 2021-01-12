@@ -1,5 +1,7 @@
 from typing import List
 
+from jmetal.core.solution import FloatSolution
+
 from evolutionary_memetic.memetic import MemeticAlgorithm, MemeticLocalSearch, MemeticAlgorithm2
 from jmetal.config import store
 from jmetal.core.algorithm import S, R
@@ -43,8 +45,13 @@ class MemeticCognitiveAlgorithm(MemeticAlgorithm[S, R]):
         self.species2: Species = species2
         self.solutions_s1: List[S] = []
         self.solutions_s2: List[S] = []
+        self.history: List[FloatSolution] = []
+
+    def update_history(self):
+        self.history.append(self.get_result())
 
     def step(self):
+
         solutions_count = len(self.solutions)
         self.solutions.sort(key=lambda s: s.objectives[0])
 
@@ -59,6 +66,8 @@ class MemeticCognitiveAlgorithm(MemeticAlgorithm[S, R]):
         self.solutions = self.solutions_s1 + self.solutions_s2
 
         super(MemeticCognitiveAlgorithm, self).step()
+
+        self.update_history()
 
     def _run_memetic(self, initial_population: List[S], species: Species):
         memetic_spec1 = MemeticAlgorithm2(
