@@ -56,9 +56,9 @@ class GeneticAlgorithm(EvolutionaryAlgorithm[S, R]):
             self.mating_pool_size = self.crossover_operator.get_number_of_children()
 
     def update_history(self):
-        print('updating')
-        best_fitness = self.get_result().objectives[0]
-        self.history.append(best_fitness)
+        # best_fitness = self.get_result().objectives[0]
+        # self.history.append(best_fitness)
+        self.history.append(self.get_result())
 
     def get_history(self):
         return self.history
@@ -103,7 +103,7 @@ class GeneticAlgorithm(EvolutionaryAlgorithm[S, R]):
                 offspring_population.append(solution)
                 if len(offspring_population) >= self.offspring_population_size:
                     break
-
+        self.update_history()
         return offspring_population
 
     def replacement(self, population: List[S], offspring_population: List[S]) -> List[S]:
@@ -115,7 +115,8 @@ class GeneticAlgorithm(EvolutionaryAlgorithm[S, R]):
 
     def get_result(self) -> R:
         # return self.solutions[0]
-        self.solutions.sort(key=lambda s: s.objectives[0])
+        # self.solutions.sort(key=lambda s: s.objectives[0])
+        # return self.solutions[0]
         return self.solutions[0]
 
     def get_name(self) -> str:

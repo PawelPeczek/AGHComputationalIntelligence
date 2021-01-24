@@ -48,10 +48,10 @@ class MemeticCognitiveAlgorithm(MemeticAlgorithm[S, R]):
         self.history: List[FloatSolution] = []
 
     def update_history(self):
-        best_fitness = self.get_result().objectives[0]
-        self.history.append(best_fitness)
+        # best_fitness = self.get_result().objectives[0]
+        # self.history.append(best_fitness)
 
-        # self.history.append(self.get_result())
+        self.history.append(self.get_result())
 
     def step(self):
 
