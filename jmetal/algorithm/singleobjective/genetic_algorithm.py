@@ -4,6 +4,7 @@ from jmetal.config import store
 from jmetal.core.algorithm import EvolutionaryAlgorithm
 from jmetal.core.operator import Mutation, Crossover, Selection
 from jmetal.core.problem import Problem
+from jmetal.core.solution import FloatSolution
 from jmetal.util.evaluator import Evaluator
 from jmetal.util.generator import Generator
 from jmetal.util.termination_criterion import TerminationCriterion
@@ -38,12 +39,14 @@ class GeneticAlgorithm(EvolutionaryAlgorithm[S, R]):
         self.mutation_operator = mutation
         self.crossover_operator = crossover
         self.selection_operator = selection
+        self.history: List[FloatSolution] = []
 
         self.population_generator = population_generator
         self.population_evaluator = population_evaluator
 
         self.termination_criterion = termination_criterion
         self.observable.register(termination_criterion)
+
 
         self.mating_pool_size = \
             self.offspring_population_size * \
@@ -52,11 +55,20 @@ class GeneticAlgorithm(EvolutionaryAlgorithm[S, R]):
         if self.mating_pool_size < self.crossover_operator.get_number_of_children():
             self.mating_pool_size = self.crossover_operator.get_number_of_children()
 
+    def update_history(self):
+        print('updating')
+        best_fitness = self.get_result().objectives[0]
+        self.history.append(best_fitness)
+
+    def get_history(self):
+        return self.history
+
     def create_initial_solutions(self) -> List[S]:
         return [self.population_generator.new(self.problem)
                 for _ in range(self.population_size)]
 
     def evaluate(self, population: List[S]):
+
         return self.population_evaluator.evaluate(population, self.problem)
 
     def stopping_condition_is_met(self) -> bool:
@@ -72,6 +84,7 @@ class GeneticAlgorithm(EvolutionaryAlgorithm[S, R]):
         return mating_population
 
     def reproduction(self, mating_population: List[S]) -> List[S]:
+
         number_of_parents_to_combine = self.crossover_operator.get_number_of_parents()
 
         if len(mating_population) % number_of_parents_to_combine != 0:
@@ -101,6 +114,8 @@ class GeneticAlgorithm(EvolutionaryAlgorithm[S, R]):
         return population[:self.population_size]
 
     def get_result(self) -> R:
+        # return self.solutions[0]
+        self.solutions.sort(key=lambda s: s.objectives[0])
         return self.solutions[0]
 
     def get_name(self) -> str:
