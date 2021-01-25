@@ -114,10 +114,11 @@ class GeneticAlgorithm(EvolutionaryAlgorithm[S, R]):
         return population[:self.population_size]
 
     def get_result(self) -> R:
-        # return self.solutions[0]
-        # self.solutions.sort(key=lambda s: s.objectives[0])
-        # return self.solutions[0]
+        self.solutions.sort(key=lambda s: s.objectives[0])
         return self.solutions[0]
+
+    # return self.solutions[0]
+
 
     def get_name(self) -> str:
         return 'Genetic algorithm'
