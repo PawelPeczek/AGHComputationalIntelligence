@@ -180,6 +180,7 @@ def run() -> None:
         }
     )
 
+    # modify genetic to get history (see MemeticCognitiveAlgorithm)
     third_execution_unit = ExecutionUnit(
         algorithm_cls=GeneticAlgorithm,
         problem_name="Ackley",
