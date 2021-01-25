@@ -53,19 +53,33 @@ class MultiAlgorithmRunner:
     def __run_execution_unit(
         self,
         execution_unit: ExecutionUnit
-    ) -> Tuple[List[ExecutionResult], List[Optional[PlotSeries]]]:
+    ) -> Tuple[List[List[ExecutionResult]], List[List[Optional[PlotSeries]]]]:
         run_results, plot_series = [], []
         for i in range(len(execution_unit.run_parameters)):
-            run_result, plot_serie = self.__execute_algorithm_with_given_parameters(
+            run_result, plot_serie = self.__repeat_algorithm_execution(
                 execution_unit=execution_unit,
                 execution_id=i
             )
             run_results.append(run_result)
-            if plot_serie is not None:
-                plot_series.append(plot_serie)
+            plot_series.append(plot_serie)
         return run_results, plot_series
 
-    def __execute_algorithm_with_given_parameters(
+    def __repeat_algorithm_execution(
+        self,
+        execution_unit: ExecutionUnit,
+        execution_id: int
+    ) -> Tuple[List[ExecutionResult], List[Optional[PlotSeries]]]:
+        results, plot_series = [], []
+        for _ in range(execution_unit.repetitions[execution_id]):
+            result, plot_serie = self.__execute_algorithm(
+                execution_unit=execution_unit,
+                execution_id=execution_id
+            )
+            results.append(results)
+            plot_series.append(plot_serie)
+        return results, plot_series
+
+    def __execute_algorithm(
         self,
         execution_unit: ExecutionUnit,
         execution_id: int
@@ -95,4 +109,3 @@ class MultiAlgorithmRunner:
                 problem_name=execution_unit.problem_name,
                 error_description=error_description
             ), None
-

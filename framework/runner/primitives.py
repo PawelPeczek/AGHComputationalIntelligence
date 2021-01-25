@@ -29,6 +29,7 @@ class PlotSeries:
 class ExecutionUnit:
     problem_name: str
     algorithm_cls: Type[Algorithm[S, R]]
+    repetitions: List[int] = field(default_factory=list)
     drawing_fun: Optional[Callable[[Algorithm[S, R], str], PlotSeries]] = None
     run_parameters: List[dict] = field(default_factory=list)
     drawing_series_labels: List[str] = field(default_factory=list)
@@ -36,19 +37,21 @@ class ExecutionUnit:
     def register_run(
         self,
         parameters: dict,
+        repetitions: int = 1,
         drawing_label: Optional[str] = None
     ) -> ExecutionUnit:
-        new_run_parameters = self.run_parameters
-        new_run_parameters.append(parameters)
+        self.run_parameters.append(parameters)
+        self.repetitions.append(repetitions)
         drawing_series_labels = self.drawing_series_labels
         drawing_series_labels.append(
             drawing_label if drawing_label is not None
-            else f"run_{len(new_run_parameters)}"
+            else f"run_{len(self.run_parameters)}"
         )
         return replace(
             self,
-            run_parameters=new_run_parameters,
-            drawing_series_labels=drawing_series_labels
+            run_parameters=self.run_parameters,
+            drawing_series_labels=drawing_series_labels,
+            repetitions=self.repetitions
         )
 
 
@@ -67,11 +70,11 @@ class ExecutionResult:
 @dataclass_json
 @dataclass(frozen=True)
 class ExecutionHistory:
-    run_results: List[ExecutionResult] = field(default_factory=list)
+    run_results: List[List[ExecutionResult]] = field(default_factory=list)
 
     def register_run_results(
         self,
-        results: List[ExecutionResult]
+        results: List[List[ExecutionResult]]
     ) -> ExecutionHistory:
         new_run_results = self.run_results
         new_run_results.extend(results)
