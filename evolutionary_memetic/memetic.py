@@ -9,7 +9,7 @@ from jmetal.config import store
 from jmetal.core.algorithm import EvolutionaryAlgorithm, S, R
 from jmetal.core.operator import Mutation, Crossover, Selection
 from jmetal.core.problem import Problem
-from jmetal.core.solution import Solution
+from jmetal.core.solution import Solution, FloatSolution
 from jmetal.util.comparator import Comparator
 from jmetal.util.evaluator import Evaluator
 from jmetal.util.termination_criterion import TerminationCriterion, StoppingByEvaluations
@@ -79,6 +79,7 @@ class MemeticAlgorithm(EvolutionaryAlgorithm[S, R], ABC):
         self.crossover_op = crossover
         self.selection_op = selection
         self.local_search = local_search
+        self.history: List[FloatSolution] = []
 
         # self.crossover_rate = crossover_rate  # To be used
         # self.mutation_rate = mutation_rate  # To be used
@@ -94,6 +95,7 @@ class MemeticAlgorithm(EvolutionaryAlgorithm[S, R], ABC):
 
         if self.selection_size < self.crossover_op.get_number_of_children():
             self.selection_size = self.crossover_op.get_number_of_children()
+
 
     def selection(self, population: List[S]):
         return [self.selection_op.execute(population) for _ in range(self.selection_size)]
@@ -135,3 +137,31 @@ class MemeticAlgorithm(EvolutionaryAlgorithm[S, R], ABC):
 
     def get_name(self) -> str:
         return 'Memetic algorithm'
+
+
+class MemeticAlgorithm2(MemeticAlgorithm[S, R]):
+    def __init__(self,
+                 problem: Problem[S],
+                 initial_population: List[S],
+                 offspring_population_size: int,
+                 mutation: Mutation,
+                 crossover: Crossover,
+                 selection: Selection,
+                 local_search: MemeticLocalSearch,
+                 termination_criterion: TerminationCriterion = store.default_termination_criteria,
+                 evaluator: Evaluator = store.default_evaluator):
+        super(MemeticAlgorithm2, self).__init__(
+            problem=problem,
+            population_size=len(initial_population),
+            offspring_population_size=offspring_population_size,
+            mutation=mutation,
+            crossover=crossover,
+            selection=selection,
+            local_search=local_search,
+            termination_criterion=termination_criterion,
+            evaluator=evaluator)
+
+        self.solutions = initial_population
+
+    def create_initial_solutions(self) -> List[S]:
+        return self.solutions

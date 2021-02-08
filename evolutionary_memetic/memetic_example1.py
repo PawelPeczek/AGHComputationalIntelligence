@@ -1,12 +1,11 @@
+from framework.problems.singleobjective.ackley import Ackley
 from jmetal.algorithm.singleobjective import GeneticAlgorithm
 from jmetal.operator import PolynomialMutation, SBXCrossover, BinaryTournamentSelection
 from jmetal.util.termination_criterion import StoppingByEvaluations
-
-from clonal_selection.clonal_selection_simple_example import QuadraticFunction
 from evolutionary_memetic.memetic import MemeticAlgorithm, MemeticLocalSearch
 
 if __name__ == '__main__':
-    problem = QuadraticFunction(-5, 5)
+    problem = Ackley(number_of_variables=150)
     max_evaluations = 1000
     mutation = PolynomialMutation(probability=1.0 / problem.number_of_variables, distribution_index=20)
     local_search = MemeticLocalSearch(problem, mutation, StoppingByEvaluations(500))
