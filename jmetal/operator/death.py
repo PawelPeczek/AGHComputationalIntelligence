@@ -27,6 +27,8 @@ class ThresholdDeath(Death[Solution]):
 
         for to_kill in to_kill_solutions:
             alive_neighbour = self.neighbours_operator.execute((to_kill, alive_solutions))
+            if not alive_neighbour:
+                break
             to_kill.transfer_energy_to(alive_neighbour, to_kill.energy)
             alive_solutions.remove(alive_neighbour)
             transfered.append(alive_neighbour)

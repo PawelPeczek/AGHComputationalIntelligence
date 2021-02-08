@@ -48,6 +48,10 @@ class EvolutionStrategy(EvolutionaryAlgorithm[S, R]):
         self.termination_criterion = termination_criterion
         self.observable.register(termination_criterion)
 
+        self.fitness_history = []
+        self.evaluations_history = []
+
+
     def create_initial_solutions(self) -> List[S]:
         return [self.population_generator.new(self.problem)
                 for _ in range(self.population_size)]
@@ -84,6 +88,9 @@ class EvolutionStrategy(EvolutionaryAlgorithm[S, R]):
         new_population = []
         for i in range(self.mu):
             new_population.append(population_pool[i])
+
+        self.fitness_history.append(self.get_result().objectives[0])
+        self.evaluations_history.append(self.evaluations)
 
         return new_population
 

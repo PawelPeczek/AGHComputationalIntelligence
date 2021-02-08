@@ -49,6 +49,9 @@ class Emas(Algorithm[Solution, Solution], threading.Thread):
 
         self.species_fitness = {i: 0.0 for i in range(no_species)}
 
+        self.evaluations_history = []
+        self.fitness_history = []
+
     def create_initial_solutions(self) -> List[Solution]:
         initial_solutions = [self.population_generator.new(self.problem)
                              for _ in range(self.initial_population_size)]
@@ -117,13 +120,17 @@ class Emas(Algorithm[Solution, Solution], threading.Thread):
         x = self.solutions
         x = self.evaluate(x)
         self._update_species_fitness(x)
-        print(self.species_fitness)
-        print(list(map(lambda species: len(species), self.to_species_list(x))))
+        # print(self.species_fitness)
+        # print(list(map(lambda species: len(species), self.to_species_list(x))))
         x = self.exchange_energy(x)
         x = self.kill(x)
         x = self.reproduce(x)
         x = sorted(x, key=lambda sol: sol.objectives[0])
         self.solutions = x
+
+        self.fitness_history.append(self.get_result().objectives[0])
+        self.evaluations_history.append(self.evaluations)
+        # print(self.evaluations)
 
     def update_progress(self) -> None:
         self.evaluations += len(self.solutions)
