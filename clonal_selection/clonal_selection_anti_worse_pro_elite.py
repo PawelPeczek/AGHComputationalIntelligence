@@ -23,6 +23,9 @@ class ClonalSelectionAntiWorseProElite(ClonalSelection):
                  random_cells_number: int = 20,
                  termination_criterion: TerminationCriterion = StoppingByEvaluations(max_evaluations=500),
                  evaluator: Evaluator = store.default_evaluator,
+                 pull_probability: float = 0.33,
+                 push_probability: float = 0.33,
+                 random_probability: float = 0.33,
                  debug: bool = False):
         threading.Thread.__init__(self)
 
@@ -46,6 +49,9 @@ class ClonalSelectionAntiWorseProElite(ClonalSelection):
         self.history: List[FloatSolution] = []
 
         self.mutation_probability = mutation_probability
+        self.pull_probability = pull_probability
+        self.push_probability = push_probability
+        self.random_probability = random_probability
 
         self.debug = debug
 
@@ -80,20 +86,20 @@ class ClonalSelectionAntiWorseProElite(ClonalSelection):
             rand = random.random()
             if rand <= self.mutation_probability:
                 # odpychanie
-                if random.random() < 0.333:
+                if random.random() < self.push_probability:
                     if mean_worse_specie[i] > specie.variables[i]:
                         specie.variables[i] -= (specie.variables[i] - specie.lower_bound[i]) * random.random()
                     else:
                         specie.variables[i] += (specie.upper_bound[i] - specie.variables[i]) * random.random()
 
                 # przyciąganie
-                if random.random() < 0.333:
+                if random.random() < self.pull_probability:
                     if mean_elite_specie[i] > specie.variables[i]:
                         specie.variables[i] += (specie.upper_bound[i] - specie.variables[i]) * random.random()
                     else:
                         specie.variables[i] -= (specie.variables[i] - specie.lower_bound[i]) * random.random()
                 # losowa mutacja
-                if random.random() < 0.333:
+                if random.random() < self.random_probability:
                     specie.variables[i] = specie.lower_bound[i] + \
                                             (specie.upper_bound[i] - specie.lower_bound[i]) * random.random()
 
