@@ -17,3 +17,7 @@ def get_mean_result(results):
 
 def get_mean_history(histories):
     return np.mean(histories, axis=0)
+
+
+def get_std_history(histories):
+    return np.std(histories, axis=0)
