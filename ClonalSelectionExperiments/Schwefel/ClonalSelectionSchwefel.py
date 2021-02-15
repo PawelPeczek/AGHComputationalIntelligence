@@ -8,7 +8,6 @@ import sys
 
 sys.path.append("../../")
 
-
 # In[7]:
 
 
@@ -24,34 +23,32 @@ from clonal_selection.clonal_selection import ClonalSelection
 import pandas as pd
 import time
 
-
 # In[14]:
 
 
-import itertools 
+import itertools
 from pprint import pprint
 import json
-
 
 # # Clonal Selection
 
 # In[10]:
 
 
-number_of_variables = [50, 100] # 500?
+number_of_variables = [50, 100]  # 500?
 population_size = [100, 200]
-selection_size = [2/20, 5/20]
+selection_size = [2 / 20, 5 / 20]
 mutation = ["polynomial", "random"]
-mutation_probability = [1,3]
-clone_rate = [1/20,2/20]
-random_cells_number = [2/20,5/20]
+mutation_probability = [1, 3]
+clone_rate = [1 / 20, 2 / 20]
+random_cells_number = [2 / 20, 5 / 20]
 
-grid = [number_of_variables, population_size, selection_size, mutation, mutation_probability, clone_rate, random_cells_number]
+grid = [number_of_variables, population_size, selection_size, mutation, mutation_probability, clone_rate,
+        random_cells_number]
 
 grid = list(itertools.product(*grid))
 # pprint(grid[:5])
 print(len(grid))
-
 
 # In[16]:
 
@@ -68,11 +65,13 @@ for n, ps, ss, m, mp, cr, rcn in grid:
             problem=problem,
             population_size=ps,
             selection_size=int(ss * ps),
-            clone_rate = int(cr * ps), 
-            random_cells_number = int(rcn * ps),
-            mutation=PolynomialMutation(probability = mp / problem.number_of_variables) if m == "polynomial" else SimpleRandomMutation(probability = mp / problem.number_of_variables),
+            clone_rate=int(cr * ps),
+            random_cells_number=int(rcn * ps),
+            mutation=PolynomialMutation(
+                probability=mp / problem.number_of_variables) if m == "polynomial" else SimpleRandomMutation(
+                probability=mp / problem.number_of_variables),
             termination_criterion=StoppingByEvaluations(max_evaluations=max_evaluations),
-#             debug=True
+            #             debug=True
         )
 
         cs_algo.run()
@@ -86,21 +85,16 @@ for n, ps, ss, m, mp, cr, rcn in grid:
     cs_history = get_mean_history(histories)
 
     results = {
-        "problem":"Rastrigin", 
-        "number_of_variables": n, 
+        "problem": problem.get_name(),
+        "number_of_variables": n,
         "population_size": ps,
         "selection_size": ss,
         "mutation": m,
-        "mutation_probability":mp, 
+        "mutation_probability": mp,
         "clone_rate": cr,
-        "random_cells_number":rcn,
+        "random_cells_number": rcn,
         "results": histories}
     with open(f'results/clonal_selection_{problem.get_name()}_{n}_{ps}_{ss}_{m}_{mp}_{cr}_{rcn}.json', 'w') as outfile:
         json.dump(results, outfile)
 
-
 # In[ ]:
-
-
-
-
