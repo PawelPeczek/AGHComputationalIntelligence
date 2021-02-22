@@ -2,8 +2,7 @@
 # coding: utf-8
 
 # In[6]:
-
-
+import os
 import sys
 
 sys.path.append("../../")
@@ -11,8 +10,6 @@ sys.path.append("../../")
 # In[7]:
 
 
-from clonal_selection.clonal_selection_anti_worse_pro_elite import ClonalSelectionAntiWorseProElite
-from clonal_selection.clonal_selection_cognitive import ClonalSelectionCognitive
 from clonal_selection.util import get_mean_solution, get_mean_result, get_mean_history
 from framework.problems.singleobjective.schwefel import Schwefel
 from jmetal.util.termination_criterion import StoppingByEvaluations
@@ -20,14 +17,11 @@ from jmetal.util.termination_criterion import StoppingByEvaluations
 from jmetal.operator import PolynomialMutation, SimpleRandomMutation
 
 from clonal_selection.clonal_selection import ClonalSelection
-import pandas as pd
-import time
 
 # In[14]:
 
 
 import itertools
-from pprint import pprint
 import json
 
 # # Clonal Selection
@@ -35,7 +29,7 @@ import json
 # In[10]:
 
 
-number_of_variables = [50, 100]  # 500?
+number_of_variables = [50, 100, 200]  # 500?
 population_size = [100, 200]
 selection_size = [2 / 20, 5 / 20]
 mutation = ["polynomial", "random"]
@@ -54,12 +48,19 @@ print(len(grid))
 
 
 max_evaluations = 800
-number_of_tries = 3
+number_of_tries = 10
 
 for n, ps, ss, m, mp, cr, rcn in grid:
     problem = Schwefel(number_of_variables=n, lower_bound=-500, upper_bound=500)
+    file_name = f'results/clonal_selection_{problem.get_name()}_{n}_{ps}_{ss}_{m}_{mp}_{cr}_{rcn}.json'
+    if os.path.exists(file_name):
+        with open(file_name) as json_file:
+            json_results = json.load(json_file)
+            histories = json_results["results"]
+    else:
+        histories = []
     results = []
-    histories = []
+    number_of_tries -= len(histories)
     for i in range(number_of_tries):
         cs_algo = ClonalSelection(
             problem=problem,
