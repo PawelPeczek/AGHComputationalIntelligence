@@ -60,8 +60,8 @@ for n, ps, ss, m, mp, cr, rcn in grid:
     else:
         histories = []
     results = []
-    number_of_tries -= len(histories)
-    for i in range(number_of_tries):
+    number_of_tries_param = number_of_tries - len(histories)
+    for i in range(number_of_tries_param):
         cs_algo = ClonalSelection(
             problem=problem,
             population_size=ps,
@@ -78,24 +78,24 @@ for n, ps, ss, m, mp, cr, rcn in grid:
         cs_algo.run()
         results.append(cs_algo.get_result())
         histories.append([s.objectives[0] for s in cs_algo.history])
+    if number_of_tries_param:
+        print('Algorithm: ' + cs_algo.get_name())
+        print('Problem: ' + problem.get_name())
+        print('Solution: ' + str(get_mean_solution(results)))
+        print('Fitness:  ' + str(get_mean_result(results)))
+        cs_history = get_mean_history(histories)
 
-    print('Algorithm: ' + cs_algo.get_name())
-    print('Problem: ' + problem.get_name())
-    print('Solution: ' + str(get_mean_solution(results)))
-    print('Fitness:  ' + str(get_mean_result(results)))
-    cs_history = get_mean_history(histories)
+        results = {
+            "problem": problem.get_name(),
+            "number_of_variables": n,
+            "population_size": ps,
+            "selection_size": ss,
+            "mutation": m,
+            "mutation_probability": mp,
+            "clone_rate": cr,
+            "random_cells_number": rcn,
+            "results": histories}
+        with open(f'results/clonal_selection_{problem.get_name()}_{n}_{ps}_{ss}_{m}_{mp}_{cr}_{rcn}.json', 'w') as outfile:
+            json.dump(results, outfile)
 
-    results = {
-        "problem": problem.get_name(),
-        "number_of_variables": n,
-        "population_size": ps,
-        "selection_size": ss,
-        "mutation": m,
-        "mutation_probability": mp,
-        "clone_rate": cr,
-        "random_cells_number": rcn,
-        "results": histories}
-    with open(f'results/clonal_selection_{problem.get_name()}_{n}_{ps}_{ss}_{m}_{mp}_{cr}_{rcn}.json', 'w') as outfile:
-        json.dump(results, outfile)
-
-# In[ ]:
+    # In[ ]:

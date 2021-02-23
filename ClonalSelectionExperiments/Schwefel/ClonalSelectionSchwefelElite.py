@@ -51,7 +51,7 @@ number_of_tries = 10
 
 for n, ps, ss, (pull, push, random), mp, cr, rcn in grid:
     problem = Schwefel(number_of_variables=n, lower_bound=-500, upper_bound=500)
-    file_name = f'results/clonal_selection_{problem.get_name()}_{n}_{ps}_{ss}_{m}_{mp}_{cr}_{rcn}.json'
+    file_name = f'results_elite/clonal_selection_elite_{problem.get_name()}_{n}_{ps}_{ss}_{pull}_{push}_{random}_{mp}_{cr}_{rcn}.json'
     if os.path.exists(file_name):
         with open(file_name) as json_file:
             json_results = json.load(json_file)
@@ -59,8 +59,8 @@ for n, ps, ss, (pull, push, random), mp, cr, rcn in grid:
     else:
         histories = []
     results = []
-    number_of_tries -= len(histories)
-    for i in range(number_of_tries):
+    number_of_tries_param = number_of_tries - len(histories)
+    for i in range(number_of_tries_param):
         cs_algo = ClonalSelectionAntiWorseProElite(
             problem=problem,
             population_size=ps,
@@ -78,28 +78,28 @@ for n, ps, ss, (pull, push, random), mp, cr, rcn in grid:
         cs_algo.run()
         results.append(cs_algo.get_result())
         histories.append([s.objectives[0] for s in cs_algo.history])
+    if number_of_tries_param:
+        print('Algorithm: ' + cs_algo.get_name())
+        print('Problem: ' + problem.get_name())
+        print('Solution: ' + str(get_mean_solution(results)))
+        print('Fitness:  ' + str(get_mean_result(results)))
+        cs_history = get_mean_history(histories)
 
-    print('Algorithm: ' + cs_algo.get_name())
-    print('Problem: ' + problem.get_name())
-    print('Solution: ' + str(get_mean_solution(results)))
-    print('Fitness:  ' + str(get_mean_result(results)))
-    cs_history = get_mean_history(histories)
-
-    results = {
-        "problem": problem.get_name(),
-        "number_of_variables": n,
-        "population_size": ps,
-        "selection_size": ss,
-        "pull": pull,
-        "push": push,
-        "random": random,
-        "mutation_probability": mp / n,
-        "clone_rate": cr,
-        "random_cells_number": rcn,
-        "results": histories}
-    with open(
-            f'results_elite/clonal_selection_elite_{problem.get_name()}_{n}_{ps}_{ss}_{pull}_{push}_{random}_{mp}_{cr}_{rcn}.json',
-            'w') as outfile:
-        json.dump(results, outfile)
+        results = {
+            "problem": problem.get_name(),
+            "number_of_variables": n,
+            "population_size": ps,
+            "selection_size": ss,
+            "pull": pull,
+            "push": push,
+            "random": random,
+            "mutation_probability": mp / n,
+            "clone_rate": cr,
+            "random_cells_number": rcn,
+            "results": histories}
+        with open(
+                f'results_elite/clonal_selection_elite_{problem.get_name()}_{n}_{ps}_{ss}_{pull}_{push}_{random}_{mp}_{cr}_{rcn}.json',
+                'w') as outfile:
+            json.dump(results, outfile)
 
 # In[ ]:
